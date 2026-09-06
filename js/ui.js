@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=74`)
+      fetch(`${url}?v=75`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=74")
+      fetch("data/image_questions.json?v=75")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,14 +599,40 @@
         })
         .catch(() => {});
 
+    const syncBurpleria = () =>
+      fetch("data/cuestionario Burpleria.csv?v=75")
+        .then((r) => (r.ok ? r.text() : ""))
+        .then((txt) => {
+          if (!txt) return;
+          const res = window.CSV && window.CSV.parseQuestions ? window.CSV.parseQuestions(txt) : null;
+          if (res && res.ok && res.questions) {
+            const customs = (window.QuizStore && window.QuizStore.loadCustomQuestionnaires()) || [];
+            const target = customs.find((c) => c.name && (c.name.includes("Burpleria") || c.name.includes("Sistemas de Información")));
+            if (target) {
+              let added = false;
+              res.questions.forEach((q) => {
+                if (!target.questions.some((tq) => tq.text === q.text)) {
+                  q.id = target.questions.length;
+                  target.questions.push(q);
+                  added = true;
+                }
+              });
+              if (added) {
+                window.QuizStore.saveCustomQuestionnaires(customs);
+              }
+            }
+          }
+        }).catch(() => {});
+
     return Promise.all([
       loadOne("data/cuestionario.csv", "Final ADS"),
       loadOne("data/cuestionario Primer Parcial 2026.csv", "Primer Parcial 2026"),
-      loadImageQuestions()
+      loadImageQuestions(),
+      syncBurpleria()
     ]).then(([r1, r2]) => {
       if (typeof Quiz.loadCustoms === "function") Quiz.loadCustoms();
       if (S().questionnaires.length > 0) return { ok: true, loaded: true };
-      if (r1.errors) return { ok: false, errors: r1.errors };
+      if (r1 && r1.errors) return { ok: false, errors: r1.errors };
       if (r2.errors) return { ok: false, errors: r2.errors };
       return Quiz.tryLoadSaved()
         ? { ok: true, loaded: true }
