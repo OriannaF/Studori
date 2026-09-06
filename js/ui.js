@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=88")
+      fetch("data/cuestionario Final ADS vO.csv?v=89")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -4056,10 +4056,16 @@ Racha: ${conexStatsObj().streak || 0}`;
   };
 
   function openExamBuilderModal() {
-    const qs = getVisibleQuestionnaires();
-    const ov = document.createElement("div");
-    ov.className = "modal-overlay";
-    const close = () => { if(document.body.contains(ov)) document.body.removeChild(ov); };
+    try {
+      console.log("openExamBuilderModal called");
+      const qs = getVisibleQuestionnaires();
+      if (!qs || qs.length === 0) {
+        toast("No hay cuestionarios disponibles");
+        return;
+      }
+      const ov = document.createElement("div");
+      ov.className = "modal-overlay";
+      const close = () => { if(document.body.contains(ov)) document.body.removeChild(ov); };
 
     const qList = qs.map(q => `<label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--surface-hover); padding:10px; border-radius:8px; cursor:pointer;">
       <input type="checkbox" class="exam-q-chk" value="${q.hash}" checked style="transform:scale(1.2);">
@@ -4132,6 +4138,10 @@ Racha: ${conexStatsObj().streak || 0}`;
       window.Quiz.startCustomExam(selectedHashes, time, size);
       navigate("quiz");
     };
+    } catch(e) {
+      console.error("Error en openExamBuilderModal:", e);
+      toast("Error interno: " + e.message);
+    }
   }
 
   window.UI = { init, startFlashcards, view, esc, rich, toast, navigate, renderQuiz };
