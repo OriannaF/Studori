@@ -144,6 +144,13 @@ const QuizStore = (() => {
 
   function exportData() {
     const snap = snapshot();
+    EXCLUDE_SYNC.forEach((k) => {
+      const v = get(k, undefined);
+      if (v !== undefined) {
+        snap.kv[k] = v;
+        snap.times[k] = keytimes[k] || 0;
+      }
+    });
     return {
       version: 1,
       exportedAt: Date.now(),
