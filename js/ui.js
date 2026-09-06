@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=86")
+      fetch("data/cuestionario Final ADS vO.csv?v=87")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -851,8 +851,7 @@
       `Preguntas detectadas: ${ctx.questions}`,
       "",
       "Adjunto el CSV para cargarlo."
-    ].join("\r
-");
+    ].join("\r\n");
     try {
       window.location.href = `mailto:${MAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       toast("Abrimos tu correo para enviar la solicitud.");
@@ -3987,16 +3986,16 @@ Racha: ${conexStatsObj().streak || 0}`;
     ov.className = 'modal-overlay';
     const close = () => { if(document.body.contains(ov)) document.body.removeChild(ov); };
     
-    const optsHTML = (q.options || []).map((o, i) => \
+    const optsHTML = (q.options || []).map((o, i) => `
       <div style="margin-bottom:8px; display:flex; align-items:flex-start; gap:8px;">
         <label style="display:flex; flex-direction:column; align-items:center; gap:4px; font-weight:bold; font-size:12px; margin-top:6px;">
-          <input type="checkbox" id="fix-opt-corr-\" \ style="transform:scale(1.2);"> Correcta
+          <input type="checkbox" id="fix-opt-corr-${i}" ${q.correct && q.correct.includes(i) ? 'checked' : ''} style="transform:scale(1.2);"> Correcta
         </label>
-        <textarea class="input" id="fix-opt-txt-\" style="flex:1; min-height:40px; font-family:inherit;">\</textarea>
+        <textarea class="input" id="fix-opt-txt-${i}" style="flex:1; min-height:40px; font-family:inherit;">${esc(o)}</textarea>
       </div>
-    \).join('');
+    `).join('');
 
-    ov.innerHTML = \
+    ov.innerHTML = `
     <div class="modal" role="dialog" aria-modal="true" style="max-width:600px; width:90%;">
       <div class="modal-head">
         <span class="material-symbols-outlined accent-ic">edit</span>
@@ -4008,22 +4007,22 @@ Racha: ${conexStatsObj().streak || 0}`;
         </div>
         <div style="margin-bottom:12px;">
           <label class="field-label">Pregunta</label>
-          <textarea class="input" id="fix-qtext" style="width:100%; min-height:60px; font-weight:bold;">\</textarea>
+          <textarea class="input" id="fix-qtext" style="width:100%; min-height:60px; font-weight:bold;">${esc(q.text)}</textarea>
         </div>
         <div style="margin-bottom:12px;">
           <label class="field-label">Opciones</label>
-          \
+          ${optsHTML}
         </div>
         <div style="margin-bottom:12px;">
           <label class="field-label">Explicacion (Opcional)</label>
-          <textarea class="input" id="fix-qexpl" style="width:100%; min-height:60px;">\</textarea>
+          <textarea class="input" id="fix-qexpl" style="width:100%; min-height:60px;">${esc(q.explanation || '')}</textarea>
         </div>
       </div>
       <div class="modal-foot">
         <button class="btn sm" id="btn-fix-cancel">Cancelar</button>
         <button class="btn sm primary" id="btn-fix-copy"><span class="material-symbols-outlined" style="font-size:16px;">content_copy</span> Copiar para IA</button>
       </div>
-    </div>\;
+    </div>`;
     
     document.body.appendChild(ov);
     document.getElementById('btn-fix-cancel').onclick = close;
@@ -4050,12 +4049,11 @@ Racha: ${conexStatsObj().streak || 0}`;
        };
        
        navigator.clipboard.writeText(JSON.stringify(payload, null, 2)).then(() => {
-         toast('�Copiado! Pegalo en el chat de Antigravity.');
+         toast('¡Copiado! Pegalo en el chat de Antigravity.');
          close();
        });
     };
   };
 
-function openExamBuilderModal() { const qs = getVisibleQuestionnaires(); const ov = document.createElement("div"); ov.className = "modal-overlay"; const close = () => { if(document.body.contains(ov)) document.body.removeChild(ov); }; const qList = qs.map(q => '<label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--surface-hover); padding:10px; border-radius:8px; cursor:pointer;"><input type="checkbox" class="exam-q-chk" value="'+q.hash+'" checked style="transform:scale(1.2);"><span style="font-weight:500;">'+esc(q.name)+' <span class="muted small">('+q.questions.length+' preg.)</span></span></label>').join(""); ov.innerHTML = '<div class="modal" role="dialog" aria-modal="true" style="max-width:500px; width:90%;"><div class="modal-head"><span class="material-symbols-outlined accent-ic">psychology</span><h3>Simulador de Examen</h3></div><div class="modal-body" style="max-height:65vh; overflow-y:auto;"><div class="muted small" style="margin-bottom:16px;">Elegi los temas, la cantidad de preguntas y el tiempo limite para generar un simulacro a medida.</div><div style="margin-bottom:16px;"><label class="field-label">Materias / Temas a incluir</label><div style="max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px;">' + qList + '</div></div><div style="display:flex; gap:16px; margin-bottom:16px;"><div style="flex:1;"><label class="field-label">Cant. de Preguntas</label><select class="input" id="exam-b-size" style="width:100%;"><option value="10">10 preguntas</option><option value="20">20 preguntas</option><option value="30">30 preguntas</option><option value="40">40 preguntas</option><option value="50" selected>50 preguntas</option><option value="60">60 preguntas</option><option value="80">80 preguntas</option><option value="100">100 preguntas</option><option value="0">Todas las selec.</option></select></div><div style="flex:1;"><label class="field-label">Tiempo Limite</label><select class="input" id="exam-b-time" style="width:100%;"><option value="10">10 minutos</option><option value="20">20 minutos</option><option value="30">30 minutos</option><option value="45" selected>45 minutos</option><option value="60">60 minutos (1 hora)</option><option value="90">90 minutos (1.5 hs)</option><option value="120">120 minutos (2 hs)</option></select></div></div></div><div class="modal-foot"><button class="btn sm" id="btn-exam-b-cancel">Cancelar</button><button class="btn sm primary" id="btn-exam-b-start"><span class="material-symbols-outlined">play_arrow</span> Iniciar</button></div></div>'; document.body.appendChild(ov); document.getElementById("btn-exam-b-cancel").onclick = close; document.getElementById("btn-exam-b-start").onclick = () => { const checkboxes = Array.from(ov.querySelectorAll(".exam-q-chk")); const selectedHashes = checkboxes.filter(chk => chk.checked).map(chk => chk.value); if (selectedHashes.length === 0) { toast("Selecciona al menos un cuestionario."); return; } const size = parseInt(document.getElementById("exam-b-size").value, 10); const time = parseInt(document.getElementById("exam-b-time").value, 10); close(); window.Quiz.startCustomExam(selectedHashes, time, size); navigate("quiz"); }; }
   window.UI = { init, startFlashcards, view, esc, rich, toast, navigate, renderQuiz };
 })();
