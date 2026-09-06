@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studori-v91';
+const CACHE_NAME = 'studori-v92';
 const PRECACHE_URLS = [
   './',
   'index.html',
@@ -28,7 +28,9 @@ const PRECACHE_URLS = [
   'data/cuestionario%20Primer%20Parcial%202026.csv',
   'data/cuestionario%20Primer%20Parcial%202026.csv?v=74',
   'data/image_questions.json',
-  'data/image_questions.json?v=74'
+  'data/image_questions.json?v=91',
+  'data/Notebook.csv',
+  'data/Notebook.csv?v=91'
 ];
 
 self.addEventListener('install', (event) => {
