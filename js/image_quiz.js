@@ -913,9 +913,9 @@
         `;
       }).join("");
       expectedHTML = `
-        <div class="puzzle-result-expected" style="margin-top:20px; border-top:1px dashed var(--border); padding-top:16px;">
-          <div style="margin:0 0 12px 0; color:var(--green); font-weight:600;">Respuesta correcta esperada:</div>
-          <div class="puzzle-result-stage-wrap">
+        <div class="puzzle-result-expected" style="flex:1 1 300px; min-width:280px; max-width:400px;">
+          <div style="margin:0 0 8px 0; color:var(--green); font-weight:600;">Respuesta correcta esperada:</div>
+          <div class="puzzle-result-stage-wrap" style="margin:0;">
             <div class="puzzle-stage">
               <img src="${q.baseImageUrl}" alt="" class="puzzle-base-img" draggable="false">
               <div class="puzzle-slots-layer">${correctSlotsHTML}</div>
@@ -926,10 +926,10 @@
     }
 
     return `
-      <div class="puzzle-result-compare" style="display:flex; flex-direction:column;">
-        <div>
+      <div class="puzzle-result-compare" style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start;">
+        <div style="flex:1 1 300px; min-width:280px; max-width:400px;">
           ${hasErrors ? `<div style="margin:0 0 8px 0; color:var(--red); font-weight:600;">Tu respuesta:</div>` : ''}
-          <div class="puzzle-result-stage-wrap">
+          <div class="puzzle-result-stage-wrap" style="margin:0;">
             <div class="puzzle-stage">
               <img src="${q.baseImageUrl}" alt="" class="puzzle-base-img" draggable="false">
               <div class="puzzle-slots-layer">${slotsResultHTML}</div>
