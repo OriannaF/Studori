@@ -353,7 +353,10 @@ const CSV = (() => {
       const seen = new Set();
       const correct = [];
       for (const t of tokens) {
-        const n = parseInt(t.trim(), 10);
+        let nStr = t.trim();
+        const match = nStr.match(/^opci[oó]n\s*(\d+)$/i);
+        if (match) nStr = match[1];
+        const n = parseInt(nStr, 10);
         if (!Number.isFinite(n)) continue;
         if (n < 1 || n > options.length) {
           rowErrors.push(`la opción correcta ${n} está fuera de rango (1 a ${options.length})`);
