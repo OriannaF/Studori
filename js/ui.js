@@ -600,24 +600,28 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Burpleria.csv?v=76")
+      fetch("data/cuestionario Final ADS vO.csv?v=82")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
           const res = window.CSV && window.CSV.parseQuestions ? window.CSV.parseQuestions(txt) : null;
           if (res && res.ok && res.questions) {
             const customs = (window.QuizStore && window.QuizStore.loadCustomQuestionnaires()) || [];
-            const target = customs.find((c) => c.name && (c.name.includes("Burpleria") || c.name.includes("Sistemas de Información")));
+            const target = customs.find((c) => c.name && (c.name.includes("Burpleria") || c.name.includes("Sistemas de Información") || c.name.includes("Final ADS vO")));
             if (target) {
-              let added = false;
+              let changed = false;
+              if (target.name !== "Final ADS vO") {
+                target.name = "Final ADS vO";
+                changed = true;
+              }
               res.questions.forEach((q) => {
                 if (!target.questions.some((tq) => tq.text === q.text)) {
                   q.id = target.questions.length;
                   target.questions.push(q);
-                  added = true;
+                  changed = true;
                 }
               });
-              if (added) {
+              if (changed) {
                 window.QuizStore.saveCustomQuestionnaires(customs);
               }
             }
