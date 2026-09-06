@@ -879,10 +879,12 @@
     const q = d.q;
     const placements = d.placements || {};
 
+    let correctCount = 0;
     const slotsResultHTML = q.slots.map((slot) => {
       const placedPieceId = placements[slot.id];
       const placedPiece = placedPieceId ? ((d.pieces && d.pieces.find(s => s.id === placedPieceId)) || q.slots.find((s) => s.id === placedPieceId)) : null;
       const isCorrect = placedPieceId === slot.id;
+      if (isCorrect) correctCount++;
 
       return `
         <div class="puzzle-slot result ${isCorrect ? "correct" : placedPieceId ? "wrong" : "missed"}"
@@ -899,20 +901,45 @@
       `;
     }).join("");
 
-    let correctCount = 0;
-    q.slots.forEach(s => {
-      if (placements[s.id] === s.id) correctCount++;
-    });
+    const hasErrors = correctCount < q.slots.length;
+    let expectedHTML = "";
+    
+    if (hasErrors) {
+      const correctSlotsHTML = q.slots.map((slot) => {
+        return `
+          <div class="puzzle-slot result correct" style="left:${slot.x}%; top:${slot.y}%; width:${slot.width}%; height:${slot.height}%; border-color:var(--green); box-shadow:none;">
+            <img src="${slot.imageCropUrl}" alt="" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+        `;
+      }).join("");
+      expectedHTML = `
+        <div class="puzzle-result-expected" style="margin-top:20px; border-top:1px dashed var(--border); padding-top:16px;">
+          <div style="margin:0 0 12px 0; color:var(--green); font-weight:600;">Respuesta correcta esperada:</div>
+          <div class="puzzle-result-stage-wrap">
+            <div class="puzzle-stage">
+              <img src="${q.baseImageUrl}" alt="" class="puzzle-base-img" draggable="false">
+              <div class="puzzle-slots-layer">${correctSlotsHTML}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     return `
-      <div class="puzzle-result-stage-wrap">
-        <div class="puzzle-stage">
-          <img src="${q.baseImageUrl}" alt="" class="puzzle-base-img" draggable="false">
-          <div class="puzzle-slots-layer">${slotsResultHTML}</div>
+      <div class="puzzle-result-compare" style="display:flex; flex-direction:column;">
+        <div>
+          ${hasErrors ? `<div style="margin:0 0 8px 0; color:var(--red); font-weight:600;">Tu respuesta:</div>` : ''}
+          <div class="puzzle-result-stage-wrap">
+            <div class="puzzle-stage">
+              <img src="${q.baseImageUrl}" alt="" class="puzzle-base-img" draggable="false">
+              <div class="puzzle-slots-layer">${slotsResultHTML}</div>
+            </div>
+          </div>
+          <div class="muted small" style="margin-top:8px;">
+            Aciertos: <b>${correctCount}</b> de <b>${q.slots.length}</b> huecos correctos.
+          </div>
         </div>
-      </div>
-      <div class="muted small" style="margin-top:8px;">
-        Aciertos: <b>${correctCount}</b> de <b>${q.slots.length}</b> huecos correctos.
+        ${expectedHTML}
       </div>
     `;
   }

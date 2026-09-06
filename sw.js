@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studori-v78';
+const CACHE_NAME = 'studori-v79';
 const PRECACHE_URLS = [
   './',
   'index.html',
