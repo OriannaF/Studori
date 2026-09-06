@@ -1894,7 +1894,7 @@
   }
 
   function renderHome() {
-    const qs = S().questionnaires.slice();
+    const qs = getVisibleQuestionnaires().slice();
     const restricted = canViewRestricted();
 
     // Sort quizzes by activity (most frequent/recent first)
@@ -2031,9 +2031,12 @@
     return loadCourses().find((c) => Array.isArray(c.quizzes) && c.quizzes.indexOf(hash) !== -1) || null;
   }
 
-  function isOwner() {
-    const C = window.Cloud;
-    return !!(C && typeof C.isAdmin === "function" && C.isAdmin());
+  function isOwner() {}
+
+  function getVisibleQuestionnaires() {
+    const allQs = S().questionnaires || [];
+    if (isOwner()) return allQs;
+    return allQs.filter(q => q.name !== 'Final ADS');
   }
 
   function canViewRestricted() {
@@ -2188,7 +2191,7 @@
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCreateMateria(); });
       document.body.appendChild(ov);
     }
-    const qs = S().questionnaires;
+    const qs = getVisibleQuestionnaires();
     ov.innerHTML = `
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-head">
@@ -2292,7 +2295,7 @@
     const c = findCourse(openCourseId);
     if (!c) { closeCourseModal(); return; }
     const owner = isOwner();
-    const qs = S().questionnaires;
+    const qs = getVisibleQuestionnaires();
 
     let body = "";
     if (openCourseTab === "quizzes") {
@@ -2416,7 +2419,7 @@
 
 
   function renderCursos() {
-    const qs = S().questionnaires;
+    const qs = getVisibleQuestionnaires();
     const stats = qs.map((qq) => Quiz.statsFor(qq.hash)).filter(Boolean);
     const courses = loadCourses();
     const statOf = (hash) => stats.find((s) => s.hash === hash);
@@ -2625,7 +2628,7 @@
       const d = new Date(base); d.setDate(base.getDate() + i);
       const iso = isoOf(d.getFullYear(), d.getMonth(), d.getDate());
       let n = 0;
-      S().questionnaires.forEach((qq) => {
+      getVisibleQuestionnaires().forEach((qq) => {
         const by = Quiz.scheduledByDayFor(qq.hash);
         n += (by[iso] || []).length;
       });
@@ -2660,7 +2663,7 @@
   }
 
   function perCourseProgressHTML() {
-    const qs = S().questionnaires;
+    const qs = getVisibleQuestionnaires();
     const stats = qs.map((qq) => Quiz.statsFor(qq.hash)).filter(Boolean);
     const rows = stats.map((st) => {
       const seen = st.seen != null ? st.seen : st.total;
@@ -2685,7 +2688,7 @@
   }
 
   function renderProgreso() {
-    const qs = S().questionnaires;
+    const qs = getVisibleQuestionnaires();
     const stats = qs.map((qq) => Quiz.statsFor(qq.hash)).filter(Boolean);
     const agg = { total: 0, today: 0, mastered: 0, failed: 0 };
     stats.forEach((st) => { agg.total += st.total; agg.today += st.today; agg.mastered += st.mastered; agg.failed += st.failed; });
@@ -2813,7 +2816,7 @@
   function conexLoad() {
     const C = window.Conex;
     const today = C.dayKey(new Date());
-    const pool = C.buildPool(S().questionnaires);
+    const pool = C.buildPool(getVisibleQuestionnaires());
     if (pool.length < 4) return { pool: [] };
     let saved = null;
     try { saved = window.QuizStore.loadGameStats(); } catch (e) {}
@@ -2956,7 +2959,7 @@
     const st = data.state;
 
     const allQ = [];
-    (S().questionnaires || []).forEach((qq) => {
+    getVisibleQuestionnaires().forEach((qq) => {
       (qq.questions || []).forEach((q) => allQ.push(q));
     });
 
