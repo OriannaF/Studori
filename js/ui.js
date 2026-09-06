@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=76`)
+      fetch(`${url}?v=90`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=76")
+      fetch("data/image_questions.json?v=90")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -4125,22 +4125,27 @@ Racha: ${conexStatsObj().streak || 0}`;
     document.body.appendChild(ov);
     document.getElementById('btn-exam-b-cancel').onclick = close;
     document.getElementById('btn-exam-b-start').onclick = () => {
-      const checkboxes = Array.from(ov.querySelectorAll('.exam-q-chk'));
-      const selectedHashes = checkboxes.filter(chk => chk.checked).map(chk => chk.value);
-      if (selectedHashes.length === 0) {
-        toast("Seleccioná al menos un cuestionario.");
-        return;
+      try {
+        const checkboxes = Array.from(ov.querySelectorAll('.exam-q-chk'));
+        const selectedHashes = checkboxes.filter(chk => chk.checked).map(chk => chk.value);
+        if (selectedHashes.length === 0) {
+          toast("Seleccioná al menos un cuestionario.");
+          return;
+        }
+        const size = parseInt(document.getElementById('exam-b-size').value, 10);
+        const time = parseInt(document.getElementById('exam-b-time').value, 10);
+        
+        close();
+        window.Quiz.startCustomExam(selectedHashes, time, size);
+        navigate("quiz");
+      } catch(e) {
+        console.error("Error al iniciar simulacro:", e);
+        toast("Error al iniciar: " + e.message);
       }
-      const size = parseInt(document.getElementById('exam-b-size').value, 10);
-      const time = parseInt(document.getElementById('exam-b-time').value, 10);
-      
-      close();
-      window.Quiz.startCustomExam(selectedHashes, time, size);
-      navigate("quiz");
     };
     } catch(e) {
       console.error("Error en openExamBuilderModal:", e);
-      toast("Error interno: " + e.message);
+      toast("Error interno al abrir modal: " + e.message);
     }
   }
 
