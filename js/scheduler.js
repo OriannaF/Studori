@@ -177,8 +177,20 @@ const Scheduler = (() => {
         return buildFailedSession(questions, progress, size, fullPoints == null ? 1 : fullPoints, now);
       case "all":
         return cap([].concat(unseen, due, rest).sort(weakSort(progress)));
-      case "timed":
-        return cap(shuffle(questions.map((q) => q.id)));
+      case "timed": {
+        const byAttempts = {};
+        questions.forEach((q) => {
+          const p = progress[q.id] || {};
+          const att = p.attempts || 0;
+          (byAttempts[att] = byAttempts[att] || []).push(q.id);
+        });
+        const sortedAtts = Object.keys(byAttempts).map(Number).sort((a, b) => a - b);
+        let pool = [];
+        for (const att of sortedAtts) {
+          pool = pool.concat(shuffle(byAttempts[att]));
+        }
+        return cap(pool);
+      }
       case "random":
       default:
         return buildSession(questions, progress, size, now);
