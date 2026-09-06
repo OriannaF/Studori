@@ -709,8 +709,32 @@
     }));
 
     if (!it.puzzleShuffledPieces) {
-      // Shuffle pieces once for this question
+      // Collect distractors from other image questions
+      let extraCount = q.slots.length <= 3 ? 2 : 1;
+      let allOtherSlots = [];
+      if (window.Quiz && window.Quiz.S && Array.isArray(window.Quiz.S.questionnaires)) {
+        window.Quiz.S.questionnaires.forEach(quest => {
+          (quest.questions || []).forEach(oq => {
+            if (oq.type === "image_puzzle" && oq.id !== q.id) {
+              (oq.slots || []).forEach(os => allOtherSlots.push(os));
+            }
+          });
+        });
+      }
+      
       const arr = allPieces.slice();
+      // Add distractors if available
+      while (extraCount > 0 && allOtherSlots.length > 0) {
+        const idx = Math.floor(Math.random() * allOtherSlots.length);
+        const randSlot = allOtherSlots.splice(idx, 1)[0];
+        arr.push({
+          id: "dist_" + randSlot.id + "_" + Math.random().toString(36).substr(2, 5),
+          imageCropUrl: randSlot.imageCropUrl
+        });
+        extraCount--;
+      }
+
+      // Shuffle pieces once for this question
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = arr[i];
@@ -857,7 +881,7 @@
 
     const slotsResultHTML = q.slots.map((slot) => {
       const placedPieceId = placements[slot.id];
-      const placedPiece = placedPieceId ? q.slots.find((s) => s.id === placedPieceId) : null;
+      const placedPiece = placedPieceId ? ((d.pieces && d.pieces.find(s => s.id === placedPieceId)) || q.slots.find((s) => s.id === placedPieceId)) : null;
       const isCorrect = placedPieceId === slot.id;
 
       return `

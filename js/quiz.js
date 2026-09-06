@@ -434,7 +434,7 @@ const Quiz = (() => {
         total += score;
         const state = full ? "correct" : (score > 1e-9 ? "partial" : "failed");
         marked[state].push(q.id);
-        return { q, optOrder: [], placements, score, state };
+        return { q, optOrder: [], placements, score, state, pieces: it.puzzleShuffledPieces };
       }
 
       const dispChecked = (S.answers[q.id] || []).slice().sort((a, b) => a - b);
