@@ -310,14 +310,6 @@ La verdad: Característica de los Sistemas Transaccionales, dado que automatizan
 5) Evaluar y seleccionar soluciones
 6) Planear la operación y ponerla en marcha
 7) Evaluar los resultados"
-"Ordenar los pasos del proceso de resolución de problemas en la secuencia correcta:";Resolución de Problemas;"Evaluar los resultados";"Conocimiento de las causas del problema";"Planear la operación y ponerla en marcha";"Definir claramente el problema (Redefinir el problema)";"Proponer soluciones alternativas";"Determinar el problema y sus asociados";"Evaluar y seleccionar soluciones";;;"Determinar el problema y sus asociados";"Conocimiento de las causas del problema";"Definir claramente el problema (Redefinir el problema)";"Proponer soluciones alternativas";"Evaluar y seleccionar soluciones";"Planear la operación y ponerla en marcha";"Evaluar los resultados";"Orden correcto del proceso de resolución de problemas:
-1) Determinar el problema y sus asociados
-2) Conocimiento de las causas del problema
-3) Definir claramente el problema (Redefinir)
-4) Proponer soluciones alternativas
-5) Evaluar y seleccionar soluciones
-6) Planear la operación y ponerla en marcha
-7) Evaluar los resultados"
 "Ordenar las fases del Proceso Unificado (RUP) en su secuencia correcta (macro-orden):";Proceso Unificado;"Transición (Transition)";"Construcción (Construction)";"Elaboración (Elaboration)";"Inicio (Inception)";;;"Inicio (Inception)";"Elaboración (Elaboration)";"Construcción (Construction)";"Transición (Transition)";"El ciclo de vida del Proceso Unificado se estructura en cuatro fases secuenciales:
 1) Inicio (Inception): viabilidad y alcance
 2) Elaboración (Elaboration): arquitectura base y mitigación de riesgos
