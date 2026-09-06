@@ -297,10 +297,29 @@ const Quiz = (() => {
     saveDraft();
   }
 
+    function startCustomExam(hashes, timeMins, size) {
+    S.currentHash = "custom_exam";
+    S.examHashes = hashes;
+    S.name = "Simulacro de Examen";
+    S.settings.mode = "timed";
+    S.settings.timedMinutes = timeMins;
+    S.settings.timedSize = size;
+    S.settings.cat = "";
+    S.settings.typeFilter = "";
+    setExamIndex(0);
+    newSession();
+  }
+
   function newSession() {
     let questions = [];
     if (S.currentHash === "all") {
       S.questionnaires.forEach(q => { questions = questions.concat(q.questions); });
+    } else if (S.currentHash === "custom_exam" && S.examHashes) {
+      S.questionnaires.forEach(q => {
+        if (S.examHashes.includes(q.hash)) {
+          questions = questions.concat(q.questions);
+        }
+      });
     } else {
       const current = S.questionnaires.find(q => q.hash === S.currentHash);
       if (current) questions = current.questions;
@@ -850,7 +869,7 @@ const Quiz = (() => {
   return {
     S, loadCsv, tryLoadSaved, newSession, repeatSession, failedSession, toggle, setSlot, setFill, setOrder, moveOrderItem,
     isAnswered, answeredCount, submit, tryResume, resetProgress, reloadProgress,
-    persistSettings, setSize, setTimedSize, setPoints, setMode, setCat, setTypeFilter, setTimedMinutes, setExamIndex, setExamDate, setCatExamDate, quizDate, catDate,
+    persistSettings, setSize, setTimedSize, setPoints, setMode, setCat, setTypeFilter, setTimedMinutes, setExamIndex, startCustomExam, setExamDate, setCatExamDate, quizDate, catDate,
     stats, failedCount, todayCount, newCount, scheduledByDay, questionsOnDay, scoreQuestion, scoreOrder, scoreImagePuzzle,
     setPuzzleSlot, loadCustoms, loadRepoImageQuestions, saveImageQuestion,
     selectQuestionnaire, examDateFor, setExamDateFor, statsFor, draftOf, resetProgressFor,
