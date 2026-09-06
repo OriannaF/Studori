@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=90`)
+      fetch(`${url}?v=91`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=90")
+      fetch("data/image_questions.json?v=91")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=90")
+      fetch("data/cuestionario Final ADS vO.csv?v=91")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -3129,7 +3129,11 @@ Racha: ${conexStatsObj().streak || 0}`;
 
   function renderQuiz() {
     const items = S().items;
-    if (!items.length) { refreshView(); return; }
+    if (!items || !items.length) { 
+      toast("Error: No se encontraron preguntas para este simulacro (items.length = 0).");
+      refreshView(); 
+      return; 
+    }
     document.body.classList.add("quiz-open");
 
     const isExam = S().settings.mode === "timed";
