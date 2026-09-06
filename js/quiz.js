@@ -318,6 +318,19 @@ const Quiz = (() => {
     if (wantType) {
       filtered = filtered.filter((q) => (q.type || "select") === wantType);
     }
+    
+    // Deduplicate by text/image to avoid exact identical questions in the same session
+    const seen = new Set();
+    const uniqueFiltered = [];
+    filtered.forEach(q => {
+      const key = q.type === "image_puzzle" ? (q.baseImageUrl || q.id) : (q.text || q.id).toString().trim().toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueFiltered.push(q);
+      }
+    });
+    filtered = uniqueFiltered;
+
     const sessionSize = isTimed ? (S.settings.timedSize || 50) : S.settings.size;
     buildFrom(() => Sched.buildByMode(filtered, S.progress, S.settings.mode, sessionSize, undefined, S.settings.points));
   }

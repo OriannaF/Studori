@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=83")
+      fetch("data/cuestionario Final ADS vO.csv?v=84")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
