@@ -310,3 +310,24 @@ La verdad: Característica de los Sistemas Transaccionales, dado que automatizan
 5) Evaluar y seleccionar soluciones
 6) Planear la operación y ponerla en marcha
 7) Evaluar los resultados"
+"Ordenar los pasos del proceso de resolución de problemas en la secuencia correcta:";Resolución de Problemas;"Evaluar los resultados";"Conocimiento de las causas del problema";"Planear la operación y ponerla en marcha";"Definir claramente el problema (Redefinir el problema)";"Proponer soluciones alternativas";"Determinar el problema y sus asociados";"Evaluar y seleccionar soluciones";;;"Determinar el problema y sus asociados";"Conocimiento de las causas del problema";"Definir claramente el problema (Redefinir el problema)";"Proponer soluciones alternativas";"Evaluar y seleccionar soluciones";"Planear la operación y ponerla en marcha";"Evaluar los resultados";"Orden correcto del proceso de resolución de problemas:
+1) Determinar el problema y sus asociados
+2) Conocimiento de las causas del problema
+3) Definir claramente el problema (Redefinir)
+4) Proponer soluciones alternativas
+5) Evaluar y seleccionar soluciones
+6) Planear la operación y ponerla en marcha
+7) Evaluar los resultados"
+"Ordenar las fases del Proceso Unificado (RUP) en su secuencia correcta (macro-orden):";Proceso Unificado;"Transición (Transition)";"Construcción (Construction)";"Elaboración (Elaboration)";"Inicio (Inception)";;;"Inicio (Inception)";"Elaboración (Elaboration)";"Construcción (Construction)";"Transición (Transition)";"El ciclo de vida del Proceso Unificado se estructura en cuatro fases secuenciales:
+1) Inicio (Inception): viabilidad y alcance
+2) Elaboración (Elaboration): arquitectura base y mitigación de riesgos
+3) Construcción (Construction): desarrollo iterativo masivo
+4) Transición (Transition): despliegue y entrega al usuario"
+"Ordenar las fases del Proceso Unificado según su definición correspondiente:";Proceso Unificado;"Transición (Transition): Se despliega el software, se entrena a los usuarios, se corrigen defectos de versiones beta y se entrega el sistema operativo";"Construcción (Construction): Se realiza el desarrollo masivo del código y de las funcionalidades del sistema de forma iterativa";"Elaboración (Elaboration): Se analiza a fondo el dominio del problema y se construye una línea base de la arquitectura para mitigar los riesgos técnicos";"Inicio (Inception): Se define el alcance, se identifican los actores y casos de uso críticos, y se determina la viabilidad del proyecto";;;"Inicio (Inception): Se define el alcance, se identifican los actores y casos de uso críticos, y se determina la viabilidad del proyecto";"Elaboración (Elaboration): Se analiza a fondo el dominio del problema y se construye una línea base de la arquitectura para mitigar los riesgos técnicos";"Construcción (Construction): Se realiza el desarrollo masivo del código y de las funcionalidades del sistema de forma iterativa";"Transición (Transition): Se despliega el software, se entrena a los usuarios, se corrigen defectos de versiones beta y se entrega el sistema operativo";"Cada fase del Proceso Unificado tiene un objetivo específico:
+Inicio → Elaboración → Construcción → Transición"
+"Ordenar las disciplinas de la mini-cascada de cada iteración del Proceso Unificado en su secuencia correcta:";Proceso Unificado;"Implementación (Codificación): Se escribe el código fuente de los componentes y clases planificadas";"Diseño: Se define la arquitectura física e interna del software para el incremento";"Pruebas e Integración: Se integra el nuevo código con el anterior y se ejecutan las pruebas de calidad";"Análisis: Se refina la comprensión interna de los requisitos y se distribuye el comportamiento";"Requisitos: Se planifica y se especifican los casos de uso seleccionados para esa iteración";;;"Requisitos: Se planifica y se especifican los casos de uso seleccionados para esa iteración";"Análisis: Se refina la comprensión interna de los requisitos y se distribuye el comportamiento";"Diseño: Se define la arquitectura física e interna del software para el incremento";"Implementación (Codificación): Se escribe el código fuente de los componentes y clases planificadas";"Pruebas e Integración: Se integra el nuevo código con el anterior y se ejecutan las pruebas de calidad";"El micro-orden o mini-cascada de cada iteración del Proceso Unificado:
+1) Requisitos
+2) Análisis
+3) Diseño
+4) Implementación (Codificación)
+5) Pruebas e Integración"
