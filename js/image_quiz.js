@@ -309,6 +309,26 @@
         reader.readAsDataURL(file);
         fileInput.value = "";
       });
+      
+      // Paste listener for Ctrl+V images
+      document.addEventListener("paste", function onPaste(e) {
+        if (!document.getElementById("cr-file-input")) {
+          document.removeEventListener("paste", onPaste);
+          return;
+        }
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") !== -1) {
+            const file = items[i].getAsFile();
+            const reader = new FileReader();
+            reader.onload = (ev) => loadNewImage(ev.target.result);
+            reader.readAsDataURL(file);
+            e.preventDefault();
+            break;
+          }
+        }
+      });
     }
 
     const heartBtn = document.getElementById("btn-cr-preset-heart");
