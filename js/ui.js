@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=93`)
+      fetch(`${url}?v=94`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=93")
+      fetch("data/image_questions.json?v=94")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,30 +600,37 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=93")
+      fetch("data/cuestionario Final ADS vO.csv?v=94")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
           const res = window.CSV && window.CSV.parseQuestions ? window.CSV.parseQuestions(txt) : null;
           if (res && res.ok && res.questions) {
             const customs = (window.QuizStore && window.QuizStore.loadCustomQuestionnaires()) || [];
-            const target = customs.find((c) => c.name && (c.name.includes("Burpleria") || c.name.includes("Sistemas de Información") || c.name.includes("Final ADS vO")));
-            if (target) {
-              let changed = false;
-              if (target.name !== "Final ADS vO") {
-                target.name = "Final ADS vO";
+            let target = customs.find((c) => c.name && (c.name.includes("Burpleria") || c.name.includes("Sistemas de Información") || c.name.includes("Final ADS vO")));
+            let changed = false;
+            if (!target) {
+              target = {
+                hash: "custom_" + window.QuizStore.hash("Final ADS vO_" + Date.now()),
+                name: "Final ADS vO",
+                questions: []
+              };
+              customs.push(target);
+              changed = true;
+            }
+            if (target.name !== "Final ADS vO") {
+              target.name = "Final ADS vO";
+              changed = true;
+            }
+            res.questions.forEach((q) => {
+              if (!target.questions.some((tq) => tq.text === q.text)) {
+                q.id = target.questions.length;
+                target.questions.push(q);
                 changed = true;
               }
-              res.questions.forEach((q) => {
-                if (!target.questions.some((tq) => tq.text === q.text)) {
-                  q.id = target.questions.length;
-                  target.questions.push(q);
-                  changed = true;
-                }
-              });
-              if (changed) {
-                window.QuizStore.saveCustomQuestionnaires(customs);
-              }
+            });
+            if (changed) {
+              window.QuizStore.saveCustomQuestionnaires(customs);
             }
           }
         }).catch(() => {});
