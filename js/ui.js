@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=95`)
+      fetch(`${url}?v=96`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=95")
+      fetch("data/image_questions.json?v=96")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=95")
+      fetch("data/cuestionario Final ADS vO.csv?v=96")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -3610,6 +3610,7 @@ Racha: ${conexStatsObj().streak || 0}`;
         <div class="mono-label muted">Resultado · ${esc(S().name)}</div>
         <div class="big" id="result-score">${fmt(r.total)} <span class="muted">/ ${fmt(r.max)} puntos</span></div>
         <div class="pct ${pct === 100 ? "ok-c" : pct >= 60 ? "" : "bad-c"}" id="result-pct">${pct} %</div>
+        ${r.totalNoPenalty !== undefined ? `<div class="muted" style="margin-top: 5px; font-size: 14px;" id="result-pct-nopenalty">${r.max ? Math.round((r.totalNoPenalty / r.max) * 100) : 0}% si no restase</div>` : ""}
         ${r.examStats ? `
         <div class="exam-result-summary" style="display:flex; justify-content:center; gap:12px; margin:10px 0; align-items:center; flex-wrap:wrap;">
           <span class="exam-badge ${pct >= 60 ? "passed" : "failed"}">
@@ -3681,6 +3682,7 @@ Racha: ${conexStatsObj().streak || 0}`;
         const pct = res.max ? Math.round((res.total / res.max) * 100) : 0;
         const scoreEl = document.getElementById("result-score");
         const pctEl = document.getElementById("result-pct");
+        const pctNoPenEl = document.getElementById("result-pct-nopenalty");
         if (scoreEl) scoreEl.innerHTML = `${fmt(res.total)} <span class="muted">/ ${fmt(res.max)} puntos</span>`;
         if (pctEl) {
           pctEl.textContent = pct + " %";

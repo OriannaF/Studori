@@ -74,6 +74,42 @@ const Quiz = (() => {
     return Math.round(s * 100000) / 100000;
   }
 
+  function scoreQuestionNoPenalty(q, checkedOrig) {
+    const c = q.correct.length;
+    const unit = 1 / c;
+    let s = 0;
+    for (const i of checkedOrig) s += q.correct.indexOf(i) >= 0 ? unit : 0;
+    return Math.round(s * 100000) / 100000;
+  }
+
+  function scoreFillNoPenalty(q, text) {
+    const t = CSV.normText(text);
+    if (!t) return 0;
+    return q.correct.some((c) => CSV.normText(c) === t) ? 1 : 0;
+  }
+
+  function scoreDropdownNoPenalty(q, chosen) {
+    const unit = 1 / q.slots.length;
+    let s = 0;
+    for (let i = 0; i < q.slots.length; i++) {
+      const c = chosen == null ? null : chosen[i];
+      if (c === q.correctSlot[i]) s += unit;
+    }
+    return Math.round(s * 100000) / 100000;
+  }
+
+  function scoreImagePuzzleNoPenalty(q, placements) {
+    if (!q.slots || !q.slots.length) return 0;
+    const unit = 1 / q.slots.length;
+    let s = 0;
+    for (const slot of q.slots) {
+      if (placements && placements[slot.id] === slot.id) {
+        s += unit;
+      }
+    }
+    return Math.round(s * 100000) / 100000;
+  }
+
   function setPuzzleSlot(qid, slotId, pieceId) {
     if (!S.answers[qid] || typeof S.answers[qid] !== "object") {
       S.answers[qid] = {};
@@ -418,6 +454,7 @@ const Quiz = (() => {
     const pts = S.settings.points;
     const marked = { correct: [], partial: [], failed: [] };
     let total = 0;
+    let totalNoPenalty = 0;
     const cap = Math.max(4, Math.round(S.questions.length / 30));
     const schedCtx = { progress: S.progress };
     const detail = S.items.map((it) => {
@@ -427,6 +464,7 @@ const Quiz = (() => {
       if (q.type === "dropdown") {
         const chosen = S.answers[q.id] || {};
         const score = scoreDropdown(q, chosen);
+        const scoreNoPenalty = scoreDropdownNoPenalty(q, chosen);
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
         total += score;
@@ -437,6 +475,7 @@ const Quiz = (() => {
       if (q.type === "fill") {
         const answer = typeof S.answers[q.id] === "string" ? S.answers[q.id] : "";
         const score = scoreFill(q, answer);
+        const scoreNoPenalty = scoreFillNoPenalty(q, answer);
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
         total += score;
@@ -460,6 +499,8 @@ const Quiz = (() => {
       if (q.type === "image_puzzle") {
         const placements = S.answers[q.id] || {};
         const rawScore = scoreImagePuzzle(q, placements);
+        const rawScoreNoPenalty = scoreImagePuzzleNoPenalty(q, placements);
+        const scoreNoPenalty = Math.round(rawScoreNoPenalty * pts * 100000) / 100000;
         const score = Math.round(rawScore * pts * 100000) / 100000;
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
@@ -472,6 +513,7 @@ const Quiz = (() => {
       const dispChecked = (S.answers[q.id] || []).slice().sort((a, b) => a - b);
       const origChecked = dispChecked.map((d) => it.optOrder[d]);
       const score = scoreQuestion(q, origChecked);
+      const scoreNoPenalty = scoreQuestionNoPenalty(q, origChecked);
       const full = score + 1e-9 >= pts;
       S.progress[q.id] = Sched.update(card, score, full, qCtx);
       total += score;
@@ -479,7 +521,7 @@ const Quiz = (() => {
       marked[state].push(q.id);
       return { q, optOrder: it.optOrder, dispChecked, origChecked, score, state };
     });
-    S.results = { detail, total, max: S.items.length * pts, pts, marked };
+    S.results = { detail, total, totalNoPenalty, max: S.items.length * pts, pts, marked };
     const hash = S.currentHash || S.hash;
     Store.saveProgress(hash, S.progress);
     Store.clearDraft(hash);
@@ -849,7 +891,9 @@ const Quiz = (() => {
 
     // Actualizar total
     const prevScore = prevState === "correct" ? pts : (prevState === "partial" ? pts * 0.5 : -pts);
+    const prevNoPenalty = prevState === "correct" ? pts : (prevState === "partial" ? pts * 0.5 : 0);
     S.results.total = S.results.total - prevScore + pts;
+    if (typeof S.results.totalNoPenalty === "number") S.results.totalNoPenalty = S.results.totalNoPenalty - prevNoPenalty + pts;
 
     // Actualizar progreso
     const qCtx = S.currentHash || S.hash;
