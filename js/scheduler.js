@@ -178,18 +178,43 @@ const Scheduler = (() => {
       case "all":
         return cap([].concat(unseen, due, rest).sort(weakSort(progress)));
       case "timed": {
-        const byAttempts = {};
+        let imageIds = [];
+        let otherIds = [];
         questions.forEach((q) => {
-          const p = progress[q.id] || {};
-          const att = p.attempts || 0;
-          (byAttempts[att] = byAttempts[att] || []).push(q.id);
+          if (q.type === "image_puzzle") imageIds.push(q.id);
+          else otherIds.push(q.id);
         });
-        const sortedAtts = Object.keys(byAttempts).map(Number).sort((a, b) => a - b);
+        
+        const prioritize = (ids) => {
+          const unseen = [];
+          const seen = [];
+          ids.forEach((id) => {
+            const p = progress[id];
+            if (!p || !p.attempts) unseen.push(id);
+            else seen.push(id);
+          });
+          shuffle(unseen);
+          seen.sort(weakSort(progress));
+          return unseen.concat(seen);
+        };
+        
+        imageIds = prioritize(imageIds);
+        otherIds = prioritize(otherIds);
+        
+        const limit = size > 0 ? size : questions.length;
         let pool = [];
-        for (const att of sortedAtts) {
-          pool = pool.concat(shuffle(byAttempts[att]));
-        }
-        return cap(pool);
+        let neededImages = Math.min(2, imageIds.length);
+        if (neededImages > limit) neededImages = limit;
+        
+        pool = pool.concat(imageIds.slice(0, neededImages));
+        
+        const remaining = imageIds.slice(neededImages).concat(otherIds);
+        const prioritizedRemaining = prioritize(remaining);
+        
+        const neededRest = Math.max(0, limit - pool.length);
+        pool = pool.concat(prioritizedRemaining.slice(0, neededRest));
+        
+        return shuffle(pool).map(qidToItem);
       }
       case "random":
       default:
