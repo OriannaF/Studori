@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=97`)
+      fetch(`${url}?v=98`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=97")
+      fetch("data/image_questions.json?v=98")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=97")
+      fetch("data/cuestionario Final ADS vO.csv?v=98")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -643,6 +643,34 @@
       syncBurpleria()
     ]).then(([r1, r2, r3]) => {
       if (typeof Quiz.loadCustoms === "function") Quiz.loadCustoms();
+      
+      // Combinación dinámica de los 3 cuestionarios solicitados
+      const qzList = S().questionnaires;
+      const qNotebook = qzList.find(q => q.name === "Notebook");
+      const q1P = qzList.find(q => q.name === "Primer Parcial 2026");
+      const qFinal = qzList.find(q => q.name === "Final ADS vO");
+      if (qNotebook || q1P || qFinal) {
+        let megaQ = [];
+        if (qNotebook) megaQ.push(...qNotebook.questions);
+        if (q1P) megaQ.push(...q1P.questions);
+        if (qFinal) megaQ.push(...qFinal.questions);
+        
+        // Remove duplicates and reassign IDs
+        const seenTexts = new Set();
+        const uniqueMega = [];
+        for (const q of megaQ) {
+          if (!seenTexts.has(q.text)) {
+            seenTexts.add(q.text);
+            uniqueMega.push({ ...q, id: uniqueMega.length });
+          }
+        }
+        
+        qzList.push({
+          hash: "mega_notebook_1p_final",
+          name: "Súper Combinado (Notebook + 1P + Final ADS)",
+          questions: uniqueMega
+        });
+      }
       if (S().questionnaires.length > 0) return { ok: true, loaded: true };
       if (r1 && r1.errors) return { ok: false, errors: r1.errors };
       if (r2 && r2.errors) return { ok: false, errors: r2.errors };
