@@ -468,6 +468,7 @@ const Quiz = (() => {
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
         total += score;
+        totalNoPenalty += scoreNoPenalty;
         const state = full ? "correct" : (score > 1e-9 ? "partial" : "failed");
         marked[state].push(q.id);
         return { q, optOrder: [], slotChosen: chosen, score, state };
@@ -479,6 +480,7 @@ const Quiz = (() => {
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
         total += score;
+        totalNoPenalty += scoreNoPenalty;
         const state = full ? "correct" : (score > 1e-9 ? "partial" : "failed");
         marked[state].push(q.id);
         return { q, optOrder: [], fillAnswer: answer, score, state };
@@ -492,6 +494,7 @@ const Quiz = (() => {
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
         total += score;
+        totalNoPenalty += score;
         const state = full ? "correct" : (score > 1e-9 ? "partial" : "failed");
         marked[state].push(q.id);
         return { q, optOrder: [], userOrder, score, state };
@@ -505,6 +508,7 @@ const Quiz = (() => {
         const full = score + 1e-9 >= pts;
         S.progress[q.id] = Sched.update(card, score, full, qCtx);
         total += score;
+        totalNoPenalty += scoreNoPenalty;
         const state = full ? "correct" : (score > 1e-9 ? "partial" : "failed");
         marked[state].push(q.id);
         return { q, optOrder: [], placements, score, state, pieces: it.puzzleShuffledPieces };
@@ -517,6 +521,7 @@ const Quiz = (() => {
       const full = score + 1e-9 >= pts;
       S.progress[q.id] = Sched.update(card, score, full, qCtx);
       total += score;
+      totalNoPenalty += scoreNoPenalty;
       const state = full ? "correct" : (score > 1e-9 ? "partial" : "failed");
       marked[state].push(q.id);
       return { q, optOrder: it.optOrder, dispChecked, origChecked, score, state };
