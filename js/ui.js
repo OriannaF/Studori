@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=101`)
+      fetch(`${url}?v=102`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=101")
+      fetch("data/image_questions.json?v=102")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=101")
+      fetch("data/cuestionario Final ADS vO.csv?v=102")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -1967,7 +1967,7 @@
         ${restricted ? homeDailyStripHTML() : ""}
         <div class="home-grid">
           <div class="hg-main">
-<button class="btn primary" id="btn-custom-exam" style="margin-bottom:16px; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;"><span class="material-symbols-outlined">psychology</span> Simulador de Examen (Combinar Temas)</button>
+
             <section class="panel-sec">
               <div class="sec-head-row">
                 <div class="sec-title"><span class="material-symbols-outlined">bolt</span><h2>Quizzes activos</h2></div>
