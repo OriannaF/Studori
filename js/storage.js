@@ -46,7 +46,12 @@ const QuizStore = (() => {
     try {
       store.setItem(k, JSON.stringify(v));
       if (isSyncKey(k)) { known.add(k); touchKey(k); emit(); }
-    } catch (e) { }
+    } catch (e) { 
+      console.error("Storage Error for", k, e);
+      if (e.name === "QuotaExceededError" || e.code === 22) {
+        alert("⚠️ Error: No hay espacio suficiente en el dispositivo. La memoria local está llena. Intentá achicar las imágenes o borrar cuestionarios viejos.");
+      }
+    }
   };
   const remove = (k) => {
     try { store.removeItem(k); } catch (e) { }

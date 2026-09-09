@@ -297,6 +297,28 @@
 
     const fileBtn = document.getElementById("btn-cr-upload");
     const fileInput = document.getElementById("cr-file-input");
+
+  function resizeImageBase64(dataUrl, callback) {
+    if (!dataUrl.startsWith("data:image/")) return callback(dataUrl);
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 1000, maxH = 1000;
+      let w = img.width, h = img.height;
+      if (w > maxW || h > maxH) {
+        if (w / h > maxW / maxH) { h = Math.round(h * maxW / w); w = maxW; }
+        else { w = Math.round(w * maxH / h); h = maxH; }
+      } else {
+        return callback(dataUrl);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL("image/jpeg", 0.8));
+    };
+    img.src = dataUrl;
+  }
+
     if (fileBtn && fileInput) {
       fileBtn.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", () => {
@@ -304,7 +326,7 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-          loadNewImage(e.target.result);
+          resizeImageBase64(e.target.result, (resized) => loadNewImage(resized));
         };
         reader.readAsDataURL(file);
         fileInput.value = "";
@@ -322,7 +344,9 @@
           if (items[i].type.indexOf("image") !== -1) {
             const file = items[i].getAsFile();
             const reader = new FileReader();
-            reader.onload = (ev) => loadNewImage(ev.target.result);
+            reader.onload = (ev) => {
+              resizeImageBase64(ev.target.result, (resized) => loadNewImage(resized));
+            };
             reader.readAsDataURL(file);
             e.preventDefault();
             break;
