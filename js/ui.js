@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=108`)
+      fetch(`${url}?v=109`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=108")
+      fetch("data/image_questions.json?v=109")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=108")
+      fetch("data/cuestionario Final ADS vO.csv?v=109")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -3298,9 +3298,6 @@ Racha: ${conexStatsObj().streak || 0}`;
         <button class="btn" id="btn-exit">Salir</button>
         <span class="muted mono-label" id="pending-label">${n - answered} sin responder</span>
         <button class="btn primary" id="btn-submit">Finalizar y ver puntaje</button>
-      </div>
-      <div class="quiz-pet-walk">
-        <div class="quiz-pet-bounce">${["🐕","🐈","🦖","🐢","🐧","🦆","🦔"][Math.floor(Math.random()*7)]}</div>
       </div>
     `);
     bindQuizEvents(false);
