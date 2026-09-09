@@ -734,7 +734,7 @@
 
     if (!it.puzzleShuffledPieces) {
       // Collect distractors from other image questions
-      let extraCount = q.slots.length <= 3 ? 2 : 1;
+      let extraCount = Math.floor(Math.random() * 2) + 3; // 3 o 4 distractores extra
       let allOtherSlots = [];
       if (window.Quiz && window.Quiz.S && Array.isArray(window.Quiz.S.questionnaires)) {
         window.Quiz.S.questionnaires.forEach(quest => {
