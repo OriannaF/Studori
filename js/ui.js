@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=110`)
+      fetch(`${url}?v=111`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=110")
+      fetch("data/image_questions.json?v=111")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=110")
+      fetch("data/cuestionario Final ADS vO.csv?v=111")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -3564,8 +3564,30 @@ Racha: ${conexStatsObj().streak || 0}`;
     </div>`;
   }
 
+  function showResultAnimation(passed) {
+    const container = document.createElement('div');
+    container.className = 'result-anim-container';
+    document.body.appendChild(container);
+    
+    const emojis = passed ? ['🎉', '✨', '🎊', '🥳', '👏'] : ['😢', '😭', '💔', '😞', '💀'];
+    for (let i = 0; i < 60; i++) {
+      const el = document.createElement('div');
+      el.className = 'result-emoji';
+      el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      el.style.animationDelay = (Math.random() * 1.5) + 's';
+      container.appendChild(el);
+    }
+    
+    setTimeout(() => {
+      container.remove();
+    }, 5000);
+  }
+
   function renderResults(r) {
     const pct = r.max ? Math.round((r.total / r.max) * 100) : 0;
+    showResultAnimation(pct >= 60);
     const msg = pct === 100 ? "¡Perfecto!" : pct >= 80 ? "¡Muy bien!" : pct >= 60 ? "Aprobado" : pct >= 40 ? "Hay que repasar" : "¡A estudiar más!";
     const stateOf = (s) => s === "correct" ? ["ok", "Correcta"] : s === "partial" ? ["par", "Parcial"] : ["no", "Incorrecta"];
     const failedN = r.marked.failed.length + r.marked.partial.length;
