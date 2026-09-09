@@ -579,7 +579,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=106`)
+      fetch(`${url}?v=107`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +590,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=106")
+      fetch("data/image_questions.json?v=107")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +600,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=106")
+      fetch("data/cuestionario Final ADS vO.csv?v=107")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -815,6 +815,31 @@
   }
 
   function init() {
+
+      // Limpiar memoria local de imagenes viejas pesadas
+      fetch('data/image_questions.json?v=' + Date.now())
+        .then(r => r.json())
+        .then(cloudQs => {
+          let cloudTexts = new Set();
+          cloudQs.forEach(q => (q.questions || []).forEach(iq => cloudTexts.add(iq.text)));
+          const customs = window.QuizStore.loadCustomQuestionnaires() || [];
+          let changed = false;
+          customs.forEach(c => {
+            if (c.questions) {
+              const orig = c.questions.length;
+              c.questions = c.questions.filter(q => {
+                if (q.type === 'image_puzzle' && cloudTexts.has(q.text)) return false;
+                return true;
+              });
+              if (c.questions.length !== orig) changed = true;
+            }
+          });
+          if (changed) {
+            window.QuizStore.saveCustomQuestionnaires(customs);
+            console.log('Se liberó espacio de LocalStorage.');
+          }
+        }).catch(e => console.error(e));
+
     const tt = document.getElementById("theme-toggle");
     if (tt) tt.addEventListener("click", () => {
       const el = document.documentElement;
