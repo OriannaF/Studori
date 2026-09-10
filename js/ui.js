@@ -58,15 +58,12 @@
   let showAllHomeQuizzes = false;
 
   const AGENDA = [
-    { mat: "Análisis de sistemas", desc: "", tipo: "Final", fecha: "09/09/2026 16:00" },
+{ mat: "Análisis de sistemas", desc: "", tipo: "Final", fecha: "09/09/2026 16:00" },
     { mat: "Probabilidad y Estadistica", desc: "Primera instancia de evaluación", tipo: "Parcial", fecha: "18/09/2026" },
     { mat: "Planificacion", desc: "Primer parcial teorico-practico", tipo: "Parcial", fecha: "22/09/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Primer Recuperatorio", tipo: "Recuperatorio", fecha: "25/09/2026" },
-    { mat: "AM II", desc: "", tipo: "Parcial Práctico", fecha: "29/09/2026" },
-    { mat: "AM II", desc: "", tipo: "Parcial Práctico", fecha: "20/10/2026" },
     { mat: "Diseño de sistemas", desc: "IE3 Práctico", tipo: "Parcial Práctico", fecha: "22/10/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Segunda instancia de evaluación", tipo: "Parcial", fecha: "30/10/2026" },
-    { mat: "AM II", desc: "", tipo: "Recuperatorio", fecha: "01/11/2026" },
     { mat: "Diseño de sistemas", desc: "IE3 Recu practica", tipo: "Recuperatorio", fecha: "04/11/2026" },
     { mat: "Planificacion", desc: "Segundo parcial teorico", tipo: "Parcial", fecha: "10/11/2026" },
     { mat: "Planificacion", desc: "Recuperatorios", tipo: "Recuperatorio", fecha: "17/11/2026" },
@@ -74,10 +71,12 @@
     { mat: "Diseño de sistemas", desc: "IE5 Teoria", tipo: "Parcial Teórico", fecha: "18/11/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Tercer Instancia de Evaluación", tipo: "Parcial", fecha: "20/11/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Instancia de recuperatorios", tipo: "Recuperatorio", fecha: "27/11/2026" },
-    { mat: "AM II", desc: "", tipo: "Parcial Teórico", fecha: "01/12/2026" },
     { mat: "Planificacion", desc: "Entrega final pr [ABRIR] seguimiento", tipo: "TPI", fecha: "01/12/2026" },
     { mat: "Diseño de sistemas", desc: "IE4 Recu TPI", tipo: "Recuperatorio", fecha: "02/12/2026" },
-    { mat: "Diseño de sistemas", desc: "IE5 Recu Teoria", tipo: "Recuperatorio", fecha: "09/12/2026" }
+    { mat: "Diseño de sistemas", desc: "IE5 Recu Teoria", tipo: "Recuperatorio", fecha: "09/12/2026" },
+    { mat: "AM II", desc: "3er Parcial", tipo: "Parcial", fecha: "22/09/2026" },
+    { mat: "AM II", desc: "4to Parcial", tipo: "Parcial", fecha: "10/12/2026" },
+    { mat: "AM II", desc: "Recuperatorio", tipo: "Recuperatorio", fecha: "17/12/2026" }
   ];
 
   const esc = (v) => String(v == null ? "" : v)
@@ -579,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=111`)
+      fetch(`${url}?v=112`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -590,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=111")
+      fetch("data/image_questions.json?v=112")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -600,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=111")
+      fetch("data/cuestionario Final ADS vO.csv?v=112")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
