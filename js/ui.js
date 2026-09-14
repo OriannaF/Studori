@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=113`)
+      fetch(`${url}?v=114`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=113")
+      fetch("data/image_questions.json?v=114")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=113")
+      fetch("data/cuestionario Final ADS vO.csv?v=114")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -2203,7 +2203,6 @@
           <div class="mat-main">
             <div class="mat-top">
               <div class="mat-titling">
-                <div style="margin-bottom:4px;">${materiaTagHTML(c.name)}</div>
                 <h3>${esc(c.name)}${owner ? `
                 <button class="mini-edit" data-rename-course="${c.id}" title="Renombrar materia">
                   <span class="material-symbols-outlined">edit</span>
