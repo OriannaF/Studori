@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=114`)
+      fetch(`${url}?v=115`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=114")
+      fetch("data/image_questions.json?v=115")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=114")
+      fetch("data/cuestionario Final ADS vO.csv?v=115")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -2132,7 +2132,6 @@
               <h3>${esc(st.name)}</h3>
               <span class="eyebrow ${toneCls}">${mat ? esc(mat.name) : "Sin materia"}</span>
             </div>
-            <div class="pct-badge ${toneCls}">${pct}%</div>
           </div>
           <div>
             <div class="progress ${tone === "tone-green" ? "green" : ""} ${tone === "tone-purple" ? "grad" : ""}"><span style="width:${pct}%"></span></div>
@@ -2208,7 +2207,6 @@
                   <span class="material-symbols-outlined">edit</span>
                 </button>` : ""}</h3>
               </div>
-              <div class="pct-badge ${toneCls}">${pct}%</div>
             </div>
             <div class="progress ${barCls}"><span style="width:${pct}%"></span></div>
             <div class="exam-card-meta">
