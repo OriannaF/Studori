@@ -23,27 +23,46 @@ const Quiz = (() => {
     materiaCut: ""
   };
 
+  function hasPenalty() {
+    if (!window.Quiz || !window.Quiz.S) return true;
+    try {
+      const customs = JSON.parse(localStorage.getItem("custom_questionnaires") || "[]");
+      if (customs.some(c => c.hash === window.Quiz.S.hash)) return false;
+    } catch(e) {}
+    return true;
+  }
+
+  function getPenaltyUnit(unit, c) {
+    if (!hasPenalty()) return 0;
+    // Si hay 1 sola correcta, resta el punto entero. Si hay múltiples, resta la mitad de lo que suma.
+    return c === 1 ? unit : (unit / 2);
+  }
+
   function scoreQuestion(q, checkedOrig) {
     const c = q.correct.length;
     const unit = 1 / c;
+    const penalty = getPenaltyUnit(unit, c);
     let s = 0;
-    for (const i of checkedOrig) s += q.correct.indexOf(i) >= 0 ? unit : -unit;
+    for (const i of checkedOrig) s += q.correct.indexOf(i) >= 0 ? unit : -penalty;
     return Math.round(s * 100000) / 100000;
   }
 
   function scoreFill(q, text) {
     const t = CSV.normText(text);
     if (!t) return 0;
-    return q.correct.some((c) => CSV.normText(c) === t) ? 1 : -1;
+    const penalty = hasPenalty() ? 1 : 0; // c=1 (un solo hueco) -> penalidad completa
+    return q.correct.some((c) => CSV.normText(c) === t) ? 1 : -penalty;
   }
 
   function scoreDropdown(q, chosen) {
-    const unit = 1 / q.slots.length;
+    const c = q.slots.length; // total huecos
+    const unit = 1 / c;
+    const penalty = getPenaltyUnit(unit, c);
     let s = 0;
-    for (let i = 0; i < q.slots.length; i++) {
-      const c = chosen == null ? null : chosen[i];
-      if (c === q.correctSlot[i]) s += unit;
-      else if (c != null) s -= unit;
+    for (let i = 0; i < c; i++) {
+      const ch = chosen == null ? null : chosen[i];
+      if (ch === q.correctSlot[i]) s += unit;
+      else if (ch != null) s -= penalty;
     }
     return Math.round(s * 100000) / 100000;
   }
@@ -57,18 +76,21 @@ const Quiz = (() => {
     for (let i = 0; i < n; i++) {
       if (userOrder[i] === q.correct[i]) s += unit;
     }
+    // El orden no suele tener penalidad negativa porque siempre están todas las opciones puestas
     return Math.round(s * 100000) / 100000;
   }
 
   function scoreImagePuzzle(q, placements) {
     if (!q.slots || !q.slots.length) return 0;
-    const unit = 1 / q.slots.length;
+    const c = q.slots.length;
+    const unit = 1 / c;
+    const penalty = getPenaltyUnit(unit, c);
     let s = 0;
     for (const slot of q.slots) {
       if (placements && placements[slot.id] === slot.id) {
         s += unit;
       } else if (placements && placements[slot.id]) {
-        s -= unit;
+        s -= penalty;
       }
     }
     return Math.round(s * 100000) / 100000;
