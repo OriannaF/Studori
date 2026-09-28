@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=117`)
+      fetch(`${url}?v=118`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=117")
+      fetch("data/image_questions.json?v=118")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=117")
+      fetch("data/cuestionario Final ADS vO.csv?v=118")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -638,13 +638,31 @@
       loadOne("data/cuestionario.csv", "Final ADS"),
       loadOne("data/cuestionario Primer Parcial 2026.csv", "Primer Parcial 2026"),
       loadOne("data/Notebook.csv", "Notebook"),
+      loadOne("data/cuestionario Planificacion.csv", "Planificación"),
       loadImageQuestions(),
       syncBurpleria()
     ]).then(([r1, r2, r3]) => {
       if (typeof Quiz.loadCustoms === "function") Quiz.loadCustoms();
       
-      // Combinación dinámica de los 3 cuestionarios solicitados
       const qzList = S().questionnaires;
+      const planQ = qzList.find(q => q.name === "Planificación");
+      if (planQ) {
+        let courses = window.QuizStore.loadCourses();
+        if (!Array.isArray(courses)) courses = [];
+        let planCourse = courses.find(c => c.name.toLowerCase().includes("planificaci"));
+        if (!planCourse) {
+          planCourse = { id: Date.now().toString(36), name: "Planificación", quizzes: [], material: [], links: [] };
+          courses.push(planCourse);
+        }
+        if (!planCourse.quizzes) planCourse.quizzes = [];
+        if (!planCourse.quizzes.includes(planQ.hash)) {
+          planCourse.quizzes.push(planQ.hash);
+          if (typeof updateCourses === "function") updateCourses(courses);
+          else window.QuizStore.saveCourses(courses);
+        }
+      }
+      
+      // Combinación dinámica de los 3 cuestionarios solicitados
       const qNotebook = qzList.find(q => q.name === "Notebook");
       const q1P = qzList.find(q => q.name === "Primer Parcial 2026");
       const qFinal = qzList.find(q => q.name === "Final ADS vO");
