@@ -60,14 +60,14 @@
   const AGENDA = [
 { mat: "Análisis de sistemas", desc: "", tipo: "Final", fecha: "09/09/2026 16:00" },
     { mat: "Probabilidad y Estadistica", desc: "Primera instancia de evaluación", tipo: "Parcial", fecha: "18/09/2026" },
-    { mat: "Planificacion", desc: "Primer parcial teorico-practico", tipo: "Parcial", fecha: "22/09/2026" },
+    { mat: "Planificacion", desc: "Primer parcial teorico-practico", tipo: "Parcial", fecha: "28/09/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Primer Recuperatorio", tipo: "Recuperatorio", fecha: "25/09/2026" },
     { mat: "Diseño de sistemas", desc: "IE3 Práctico", tipo: "Parcial Práctico", fecha: "21/10/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Segunda instancia de evaluación", tipo: "Parcial", fecha: "30/10/2026" },
     { mat: "Diseño de sistemas", desc: "IE3 Recu practica", tipo: "Recuperatorio", fecha: "04/11/2026" },
     { mat: "Planificacion", desc: "Segundo parcial teorico", tipo: "Parcial", fecha: "10/11/2026" },
     { mat: "Planificacion", desc: "Recuperatorios", tipo: "Recuperatorio", fecha: "17/11/2026" },
-    { mat: "Diseño de sistemas", desc: "IE4 TPI", tipo: "TPI", fecha: "18/11/2026 → 25/11/2026" },
+    { mat: "Diseño de sistemas", desc: "IE4 TPI", tipo: "TPI", fecha: "04/11/2026" },
     { mat: "Diseño de sistemas", desc: "IE5 Teoria", tipo: "Parcial Teórico", fecha: "18/11/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Tercer Instancia de Evaluación", tipo: "Parcial", fecha: "20/11/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Instancia de recuperatorios", tipo: "Recuperatorio", fecha: "27/11/2026" },
@@ -76,7 +76,7 @@
     { mat: "Diseño de sistemas", desc: "IE5 Recu Teoria", tipo: "Recuperatorio", fecha: "09/12/2026" },
     { mat: "AM II", desc: "3er Parcial", tipo: "Parcial", fecha: "22/09/2026" },
     { mat: "AM II", desc: "4to Parcial", tipo: "Parcial", fecha: "10/12/2026" },
-    { mat: "AM II", desc: "Recuperatorio", tipo: "Recuperatorio", fecha: "17/12/2026" }
+    { mat: "AM II", desc: "Recuperatorio 3er y 4to Parcial", tipo: "Recuperatorio", fecha: "17/12/2026" }
   ];
 
   const esc = (v) => String(v == null ? "" : v)
@@ -2173,27 +2173,12 @@
       </div>`;
   }
 
-  function courseProgressOf(c) {
-    let mastered = 0, seen = 0;
-    (c.quizzes || []).forEach((h) => {
-      const st = Quiz.statsFor(h);
-      if (!st) return;
-      seen += st.seen != null ? st.seen : st.total;
-      mastered += st.mastered;
-    });
-    return { pct: seen ? Math.round((mastered / seen) * 100) : 0 };
-  }
-
   function courseCardHTML(c, i) {
     const owner = isOwner();
     const nq = (c.quizzes || []).length;
     const nm = (c.material || []).length;
     const nl = (c.links || []).length;
     const tone = toneOf(i);
-    const toneCls = tone === "tone-green" ? "tone-green" : tone === "tone-purple" ? "tone-purple" : "tone-blue";
-    const barCls = `${tone === "tone-green" ? "green" : ""} ${tone === "tone-purple" ? "grad" : ""}`;
-    const pct = nq ? courseProgressOf(c).pct : 0;
-    const status = !nq ? "Sin quizzes" : pct === 0 ? "Sin empezar" : pct < 35 ? "Recién arrancada" : "En progreso";
     return `
       <article class="mat-card ${tone} course-card">
         <div class="mat-blob" aria-hidden="true"></div>
@@ -2202,13 +2187,12 @@
           <div class="mat-main">
             <div class="mat-top">
               <div class="mat-titling">
-                <h3>${esc(c.name)}${owner ? `
+                <h3><span class="course-name">${esc(c.name)}</span>${owner ? `
                 <button class="mini-edit" data-rename-course="${c.id}" title="Renombrar materia">
                   <span class="material-symbols-outlined">edit</span>
                 </button>` : ""}</h3>
               </div>
             </div>
-            <div class="progress ${barCls}"><span style="width:${pct}%"></span></div>
             <div class="exam-card-meta">
               <span><b>${nq}</b> quizzes</span><span>·</span>
               <span><b>${nm}</b> material</span><span>·</span>
@@ -2300,14 +2284,40 @@
     setTimeout(() => { try { nm.focus(); } catch (err) {} }, 0);
   }
 
-  function renameCourse(id) {
+  function startCourseRename(btn) {
     if (!isOwner()) { toast("Solo la cuenta admin puede editar materias."); return; }
-    const c = findCourse(id);
-    if (!c) return;
-    const name = (window.prompt("Nuevo nombre de la materia:", c.name) || "").trim();
-    if (!name) return;
-    mutateCourse(id, (cc) => { cc.name = name; });
-    toast("Materia renombrada.");
+    const h3 = btn.closest("h3");
+    const nameEl = h3 && h3.querySelector(".course-name");
+    if (!nameEl || h3.querySelector(".course-rename-input")) return;
+    const id = btn.dataset.renameCourse;
+    const input = document.createElement("input");
+    input.className = "course-rename-input";
+    input.type = "text";
+    input.value = nameEl.textContent;
+    input.maxLength = 80;
+    input.setAttribute("aria-label", "Nombre de la materia");
+    nameEl.hidden = true;
+    btn.hidden = true;
+    h3.insertBefore(input, nameEl);
+    input.focus();
+    try { input.select(); } catch (e) {}
+    let closed = false;
+    const finish = (save) => {
+      if (closed) return;
+      closed = true;
+      const val = input.value.trim();
+      input.remove();
+      nameEl.hidden = false;
+      btn.hidden = false;
+      if (!save || !val || val === nameEl.textContent) return;
+      mutateCourse(id, (cc) => { cc.name = val; });
+      toast("Materia renombrada.");
+    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); finish(true); }
+      else if (e.key === "Escape") { e.preventDefault(); finish(false); }
+    });
+    input.addEventListener("blur", () => finish(true));
   }
 
   function deleteCourse(id) {
@@ -2409,8 +2419,8 @@
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-head">
         <span class="material-symbols-outlined accent-ic">${EXAM_ICONS[(ci + 1) % EXAM_ICONS.length]}</span>
-        <h3>${esc(c.name)}</h3>
-        ${owner ? `<button class="mini-edit" id="m-rename" title="Renombrar"><span class="material-symbols-outlined">edit</span></button>` : ""}
+        <h3><span class="course-name">${esc(c.name)}</span></h3>
+        ${owner ? `<button class="mini-edit" data-rename-course="${c.id}" title="Renombrar"><span class="material-symbols-outlined">edit</span></button>` : ""}
         <button class="mini-edit" id="m-close" title="Cerrar"><span class="material-symbols-outlined">close</span></button>
       </div>
       <div class="modal-tabs">${tabs.map(([tid, ic, label]) => `
@@ -2431,7 +2441,9 @@
     });
     const xc = ov.querySelector("#m-close"); if (xc) xc.onclick = closeCourseModal;
     const xc2 = ov.querySelector("#m-close2"); if (xc2) xc2.onclick = closeCourseModal;
-    const rn = ov.querySelector("#m-rename"); if (rn) rn.onclick = () => renameCourse(c.id);
+    ov.querySelectorAll("[data-rename-course]").forEach((b) => {
+      b.onclick = () => startCourseRename(b);
+    });
     const dl = ov.querySelector("#m-del"); if (dl) dl.onclick = () => deleteCourse(c.id);
 
     ov.querySelectorAll("[data-play]").forEach((b) => {
@@ -2615,7 +2627,7 @@
       b.onclick = () => openCourseModal(b.dataset.openCourse, b.dataset.tab);
     });
     document.querySelectorAll("[data-rename-course]").forEach((b) => {
-      b.onclick = () => renameCourse(b.dataset.renameCourse);
+      b.onclick = () => startCourseRename(b);
     });
     qs.forEach((qq) => {
       if (document.getElementById("btn-start-" + qq.hash)) bindExamCard(qq.hash, qq);
