@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=119`)
+      fetch(`${url}?v=120`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=119")
+      fetch("data/image_questions.json?v=120")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=119")
+      fetch("data/cuestionario Final ADS vO.csv?v=120")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -1302,7 +1302,7 @@
     <div class="exam-card ${tone}">
       <div class="exam-card-body">
         <div class="mat-titling">
-          <h3>${esc(st.name)}</h3>
+          <h3 style="cursor:pointer; color:var(--primary); text-decoration:underline; text-decoration-color:var(--primary-light); text-underline-offset:3px;" onclick="window.openQuizConfigModal('${st.hash}')" title="Configurar y rendir">${esc(st.name)}</h3>
           ${mat ? materiaTagHTML(mat.name) : '<span class="eyebrow">Sin materia</span>'}
         </div>
         <div class="bar-row">
@@ -1314,32 +1314,6 @@
           <span><b>${st.total}</b> preguntas</span><span>·</span>
           <span><b>${st.today}</b> para hoy</span><span>·</span>
           <span><b>${st.mastered}</b> dominadas</span>
-        </div>
-        <div class="session-row">
-          <label class="field-label visually-hidden" for="sel-size-${st.hash}">Cantidad de preguntas</label>
-          <select class="input sm" id="sel-size-${st.hash}">${sizeOptions(st)}</select>
-          <label class="field-label visually-hidden" for="sel-mode-${st.hash}">Tipo de sesión</label>
-          <select class="input sm" id="sel-mode-${st.hash}">${modeOptions(st)}</select>
-          <button class="play-fab" id="btn-start-${st.hash}" title="Comenzar sesión">
-            <span class="material-symbols-outlined">play_arrow</span>
-          </button>
-          <button class="btn sm secondary" id="btn-flash-${st.hash}" type="button" title="Repasar con Flashcards" style="display:inline-flex; align-items:center; gap:4px;">
-            <span class="material-symbols-outlined" style="font-size:18px;">style</span> Flashcards
-          </button>
-          <label class="field-label visually-hidden" for="sel-time-${st.hash}">Tiempo de examen</label>
-          <select class="input sm time-sel" id="sel-time-${st.hash}" title="Tiempo límite del examen" ${isTimed ? "" : 'style="display:none;"'}>${timeOptions()}</select>
-          ${(() => {
-            const opts = catOptions(st.hash);
-            return opts ? `
-          <label class="field-label visually-hidden" for="sel-cat-${st.hash}">Categoría</label>
-          <select class="input sm cat-sel" id="sel-cat-${st.hash}" ${isTimed ? 'style="display:none;"' : ""}>${opts}</select>` : "";
-          })()}
-          ${(() => {
-            const topts = typeOptions(st.hash);
-            return topts ? `
-          <label class="field-label visually-hidden" for="sel-type-${st.hash}">Tipo de pregunta</label>
-          <select class="input sm type-sel" id="sel-type-${st.hash}" title="Filtrar por tipo de pregunta" ${isTimed ? 'style="display:none;"' : ""}>${topts}</select>` : "";
-          })()}
         </div>
         ${hasDraft ? `
         <button class="draft-chip" id="btn-resume-${st.hash}">
