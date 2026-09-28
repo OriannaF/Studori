@@ -1,0 +1,31 @@
+<!doctype html><html><head><title>t</title></head><body>
+<iframe id="f" src="/index.html" style="width:1400px;height:900px"></iframe>
+<script>
+const out = [];
+let done = false;
+const iv = setInterval(() => {
+  const d = document.getElementById("f").contentDocument;
+  if (!d || !d.querySelector("#side-nav .nav-item")) return;
+  clearInterval(iv);
+  done = true;
+  try {
+    const nav = [...d.querySelectorAll("#side-nav .nav-item")];
+    out.push("nav=" + nav.map(b => b.dataset.view).join(","));
+    out.push("homeTitle=" + d.getElementById("view-title").textContent);
+    out.push("homeCards=" + d.querySelectorAll(".qz-card").length);
+    nav.find(b => b.dataset.view === "cursos").click();
+    out.push("cursosTitle=" + d.getElementById("view-title").textContent);
+    out.push("cursosCards=" + d.querySelectorAll(".course-card").length);
+    out.push("manage=" + d.querySelectorAll("details.manage").length);
+    out.push("calGrid=" + d.querySelectorAll(".cal-grid .day").length);
+    nav.find(b => b.dataset.view === "progreso").click();
+    out.push("progresoTitle=" + d.getElementById("view-title").textContent);
+    out.push("polylines=" + d.querySelectorAll(".chart-card svg polyline").length);
+    out.push("statx=" + d.querySelectorAll(".statx-grid .statx").length);
+    out.push("ring=" + d.querySelectorAll(".en-ring").length);
+    out.push("badges=" + d.querySelectorAll(".badge-item").length);
+  } catch (e) { out.push("ERR=" + e.message); }
+  document.title = "R~" + encodeURIComponent(out.join("|"));
+}, 120);
+setTimeout(() => { if (!done) { clearInterval(iv); document.title = "R~TIMEOUT"; } }, 9000);
+</script></body></html>

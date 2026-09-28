@@ -57,12 +57,12 @@
   let calSelectedDay = null;
   let showAllHomeQuizzes = false;
 
-  const AGENDA = [
+  let AGENDA = [
 { mat: "Análisis de sistemas", desc: "", tipo: "Final", fecha: "09/09/2026 16:00" },
     { mat: "Probabilidad y Estadistica", desc: "Primera instancia de evaluación", tipo: "Parcial", fecha: "18/09/2026" },
     { mat: "Planificacion", desc: "Primer parcial teorico-practico", tipo: "Parcial", fecha: "28/09/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Primer Recuperatorio", tipo: "Recuperatorio", fecha: "25/09/2026" },
-    { mat: "Diseño de sistemas", desc: "IE3 Práctico", tipo: "Parcial Práctico", fecha: "21/10/2026" },
+    { mat: "Diseño de sistemas", desc: "IE3 Práctico", tipo: "Parcial Práctico", fecha: "22/10/2026" },
     { mat: "Probabilidad y Estadistica", desc: "Segunda instancia de evaluación", tipo: "Parcial", fecha: "30/10/2026" },
     { mat: "Diseño de sistemas", desc: "IE3 Recu practica", tipo: "Recuperatorio", fecha: "04/11/2026" },
     { mat: "Planificacion", desc: "Segundo parcial teorico", tipo: "Parcial", fecha: "10/11/2026" },
@@ -79,7 +79,21 @@
     { mat: "AM II", desc: "Recuperatorio 3er y 4to Parcial", tipo: "Recuperatorio", fecha: "17/12/2026" }
   ];
 
-  const esc = (v) => String(v == null ? "" : v)
+  try {
+    const custom = JSON.parse(localStorage.getItem("quiz.agenda") || "[]");
+    if (Array.isArray(custom) && custom.length) {
+      AGENDA = AGENDA.concat(custom);
+    }
+  } catch(e) {}
+
+  function saveCustomAgendaDate(item) {
+    try {
+      const custom = JSON.parse(localStorage.getItem("quiz.agenda") || "[]");
+      custom.push(item);
+      localStorage.setItem("quiz.agenda", JSON.stringify(custom));
+      AGENDA.push(item);
+    } catch(e) {}
+  }  const esc = (v) => String(v == null ? "" : v)
     .replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const rich = (v) => String(v == null ? "" : v)
     .split(/(!\[[^\]]*\]\([^)]*\))/g)
@@ -1096,7 +1110,8 @@
       ["new", `Solo nuevas (${st.newN})`],
       ["failed", `Solo falladas (${st.failedNow})`],
       ["all", `Todas (${st.total})`],
-      ["timed", `⏱️ Examen con tiempo (Simulacro)`]
+      ["timed", `⏱️ Examen con tiempo (Simulacro)`],
+      ["wayground", `🎮 Wayground (Paso a paso)`]
     ].map(([v, lbl]) => `<option value="${v}" ${S().settings.mode === v ? "selected" : ""}>${lbl}</option>`).join("");
   }
 
@@ -1752,11 +1767,63 @@
     <section class="panel-sec">
       <div class="sec-head-row">
         <div class="sec-title"><span class="material-symbols-outlined">edit_calendar</span><h2>Agenda Completa de Evaluaciones</h2></div>
-        <span class="day-pill mono-label">${AGENDA.length} fechas</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="day-pill mono-label">${AGENDA.length} fechas</span>
+          <button class="btn ghost sm" id="btn-add-agenda" type="button"><span class="material-symbols-outlined">add</span> Agregar</button>
+        </div>
       </div>
       <div class="eval-head"><span>Materia</span><span>Descripción</span><span>Tipo</span><span>Fecha</span></div>
       <div class="eval-list">${rows}</div>
     </section>`;
+  }
+
+  function openAddAgendaModal() {
+    let ov = document.getElementById("agenda-overlay");
+    if (!ov) {
+      ov = document.createElement("div");
+      ov.id = "agenda-overlay";
+      ov.className = "modal-overlay";
+      ov.addEventListener("click", (e) => { if (e.target === ov) ov.remove(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.getElementById("agenda-overlay")) document.getElementById("agenda-overlay").remove(); });
+      document.body.appendChild(ov);
+    }
+    ov.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" style="max-width: 400px;">
+      <div class="modal-head">
+        <h2>Nueva fecha de agenda</h2>
+        <button class="btn-icon" id="m-close-agenda"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <form class="modal-body link-add" id="form-agenda">
+        <label>Materia
+          <input type="text" name="mat" placeholder="Ej. Diseño de Sistemas" required>
+        </label>
+        <label>Descripción
+          <input type="text" name="desc" placeholder="Ej. IE4 TPI" required>
+        </label>
+        <label>Tipo
+          <input type="text" name="tipo" placeholder="Ej. Parcial Práctico" required>
+        </label>
+        <label>Fecha (dd/mm/yyyy)
+          <input type="text" name="fecha" placeholder="Ej. 22/10/2026" required>
+        </label>
+        <div class="modal-foot" style="margin-top:20px; padding:0;">
+          <button class="btn primary" type="submit" style="width:100%;">Guardar fecha</button>
+        </div>
+      </form>
+    </div>`;
+    ov.querySelector("#m-close-agenda").onclick = () => ov.remove();
+    ov.querySelector("#form-agenda").onsubmit = (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      saveCustomAgendaDate({
+        mat: data.get("mat"),
+        desc: data.get("desc"),
+        tipo: data.get("tipo"),
+        fecha: data.get("fecha")
+      });
+      ov.remove();
+      renderCursos();
+    };
   }
 
   function tasksList() {
@@ -2659,6 +2726,8 @@
       bindMonthlyCalendar();
       const tabQ = document.getElementById("tab-sub-quizzes");
       if (tabQ) tabQ.onclick = () => { activeCursosTab = "quizzes"; renderCursos(); };
+      const btnAddAgenda = document.getElementById("btn-add-agenda");
+      if (btnAddAgenda) btnAddAgenda.onclick = openAddAgendaModal;
       return;
     }
 
@@ -2706,51 +2775,7 @@
         </div>
         <div class="exam-grid">${coursesGrid}</div>
       </section>
-      <section class="home-section">
-        <div class="sec-head">
-          <span class="material-symbols-outlined">event</span>
-          <div>
-            <h2>Fechas de parciales</h2>
-            <p class="muted small sub">Elegí la materia y fijale la fecha límite — corta la planificación de repasos</p>
-          </div>
-        </div>
-        <div id="fechas-cursos"></div>
-      </section>
       ${freeSection}
-      <section class="home-section">
-        <div class="card">
-          <h2>Agregar cuestionario</h2>
-          <div class="dropzone compact" id="dropzone2">
-            <div>Arrastrá el CSV acá o hacé clic para elegirlo — después elegís a qué materia pertenece</div>
-          </div>
-          <input type="file" id="file2" accept=".csv,text/csv,text/plain" hidden>
-          <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div>
-              <span class="mono-label"><b>¿Querés crear preguntas con imágenes recortables?</b></span>
-              <p class="muted small" style="margin:0;">Subí una foto o diagrama, trazá los huecos y armá preguntas drag & drop.</p>
-            </div>
-            <button class="btn sm primary" id="btn-open-creador-cursos" type="button">
-              <span class="material-symbols-outlined">crop</span> Abrir Creador de Imágenes
-            </button>
-          </div>
-        </div>
-      </section>
-      <section class="home-section">
-        <div class="card">
-          <h2>Copia de seguridad y datos</h2>
-          <p class="muted small">Podés exportar todo tu progreso y configuración en un archivo JSON para tener un respaldo o transferirlo a otro dispositivo.</p>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-            <button class="btn sm" id="btn-export-backup" type="button"><span class="material-symbols-outlined">download</span> Exportar copia (JSON)</button>
-            <label class="btn sm" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-              <span class="material-symbols-outlined">upload</span> Restaurar copia
-              <input type="file" id="input-import-backup" accept=".json" style="display:none;">
-            </label>
-            ${Cloud && Cloud.isConfigured() && Cloud.user() ? `
-            <button class="btn danger sm" id="btn-reset-all" type="button">Reiniciar progreso</button>
-            ` : ""}
-          </div>
-        </div>
-      </section>
     `);
 
     const tabH = document.getElementById("tab-sub-horarios");
@@ -3341,21 +3366,62 @@ Racha: ${conexStatsObj().streak || 0}`;
     document.body.classList.add("quiz-open");
 
     const isExam = S().settings.mode === "timed";
+    const isWayground = S().settings.mode === "wayground";
+    const isSingle = isExam || isWayground;
     const n = items.length;
     const answered = Quiz.answeredCount();
 
-    if (isExam) {
+    if (isSingle) {
       const curIdx = Math.max(0, Math.min(n - 1, S().examIndex || 0));
       S().examIndex = curIdx;
       const it = items[curIdx];
-      const cardHTML = buildQuestionCardHTML(it, curIdx, n, true);
+      const cardHTML = (isWayground && it.evaluatedWaygroundResult)
+        ? `<div class="res-grid" style="margin-top:0;">${buildResultCardHTML(it.evaluatedWaygroundResult, curIdx)}</div>`
+        : buildQuestionCardHTML(it, curIdx, n, true);
 
-      const timerHTML = `
-        <div class="exam-timer-bar ${timedExamState && timedExamState.remainingSec <= 30 ? "timer-critical" : timedExamState && timedExamState.remainingSec <= 120 ? "timer-warn" : ""}" id="exam-timer-bar" title="Tiempo restante para completar el examen">
-          <span class="material-symbols-outlined">timer</span>
-          <span class="timer-mode-tag">EXAMEN</span>
-          <span class="timer-digits" id="timer-digits">${formatTimer(timedExamState ? timedExamState.remainingSec : (S().settings.timedMinutes || 40) * 60)}</span>
-        </div>`;
+      let timerHTML = "";
+      if (isExam) {
+        timerHTML = `
+          <div class="exam-timer-bar ${timedExamState && timedExamState.remainingSec <= 30 ? "timer-critical" : timedExamState && timedExamState.remainingSec <= 120 ? "timer-warn" : ""}" id="exam-timer-bar" title="Tiempo restante para completar el examen">
+            <span class="material-symbols-outlined">timer</span>
+            <span class="timer-mode-tag">EXAMEN</span>
+            <span class="timer-digits" id="timer-digits">${formatTimer(timedExamState ? timedExamState.remainingSec : (S().settings.timedMinutes || 40) * 60)}</span>
+          </div>`;
+      } else {
+        timerHTML = `<div class="exam-timer-bar" style="background:var(--primary); color:#fff;"><span class="material-symbols-outlined" style="color:#fff;">sports_esports</span><span class="timer-mode-tag" style="color:#fff;">WAYGROUND</span></div>`;
+      }
+
+      let footerButtons = "";
+      if (isWayground) {
+        if (!it.evaluatedWaygroundResult) {
+          footerButtons = `<div class="mono-label muted">Pregunta ${curIdx + 1} de ${n}</div>
+            <button class="btn primary" id="btn-eval-wayground" style="min-width:140px;">
+              <span class="material-symbols-outlined">fact_check</span> Responder
+            </button>`;
+        } else {
+          footerButtons = `<div class="mono-label muted">Pregunta ${curIdx + 1} de ${n}</div>` + (curIdx < n - 1 
+            ? `<button class="btn primary" id="btn-next-q" style="min-width:140px;">
+                Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+               </button>`
+            : `<button class="btn primary btn-exam-finish" id="btn-finish-q" style="min-width:140px;">
+                <span class="material-symbols-outlined">check_circle</span> Ver Resumen
+               </button>`);
+        }
+      } else {
+        footerButtons = `
+          <button class="btn secondary" id="btn-prev-q" ${curIdx === 0 ? "disabled" : ""}>
+            <span class="material-symbols-outlined">arrow_back</span> Anterior
+          </button>
+          <div class="mono-label muted">Pregunta ${curIdx + 1} de ${n}</div>
+          ${curIdx < n - 1 ? `
+          <button class="btn primary" id="btn-next-q">
+            Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+          </button>` : `
+          <button class="btn primary btn-exam-finish" id="btn-finish-q">
+            <span class="material-symbols-outlined">check_circle</span> Finalizar Examen
+          </button>`}
+        `;
+      }
 
       view(`
         <div class="exam-wrapper">
@@ -3368,7 +3434,7 @@ Racha: ${conexStatsObj().streak || 0}`;
             </div>
             <div class="exam-header-right">
               <button class="btn sm" id="btn-exit">Salir</button>
-              <button class="btn sm primary" id="btn-submit">Finalizar Examen</button>
+              ${isExam ? `<button class="btn sm primary" id="btn-submit">Finalizar Examen</button>` : `<button class="btn sm primary" id="btn-submit">Finalizar</button>`}
             </div>
           </div>
 
@@ -3385,11 +3451,14 @@ Racha: ${conexStatsObj().streak || 0}`;
               </div>
               <div class="exam-num-grid" id="exam-num-grid">
                 ${items.map((item, idx) => {
-                  const isAns = Quiz.isAnswered(item.q.id);
+                  const isAns = isWayground ? !!item.evaluatedWaygroundResult : Quiz.isAnswered(item.q.id);
                   const isCur = idx === curIdx;
                   let cls = "exam-num-btn";
                   if (isCur) cls += " current";
                   if (isAns) cls += " answered";
+                  if (isWayground && item.evaluatedWaygroundResult) {
+                     cls += (item.evaluatedWaygroundResult.state === "correct" ? " ok" : " wrong");
+                  }
                   return `<button class="${cls}" data-goto="${idx}" id="exam-btn-${item.q.id}" type="button" title="Pregunta ${idx + 1}">${idx + 1}</button>`;
                 }).join("")}
               </div>
@@ -3397,18 +3466,8 @@ Racha: ${conexStatsObj().streak || 0}`;
 
             <section class="exam-main-area">
               ${cardHTML}
-              <div class="card exam-stepper-footer">
-                <button class="btn secondary" id="btn-prev-q" ${curIdx === 0 ? "disabled" : ""}>
-                  <span class="material-symbols-outlined">arrow_back</span> Anterior
-                </button>
-                <div class="mono-label muted">Pregunta ${curIdx + 1} de ${n}</div>
-                ${curIdx < n - 1 ? `
-                <button class="btn primary" id="btn-next-q">
-                  Siguiente <span class="material-symbols-outlined">arrow_forward</span>
-                </button>` : `
-                <button class="btn primary btn-exam-finish" id="btn-finish-q">
-                  <span class="material-symbols-outlined">check_circle</span> Finalizar Examen
-                </button>`}
+              <div class="card exam-stepper-footer" ${isWayground && it.evaluatedWaygroundResult ? 'style="justify-content: space-between;"' : ''}>
+                ${footerButtons}
               </div>
             </section>
           </div>
@@ -3535,6 +3594,21 @@ Racha: ${conexStatsObj().streak || 0}`;
           Quiz.setExamIndex(S().examIndex + 1);
           renderQuiz();
         }
+      });
+    }
+
+    const evalWaygroundBtn = document.getElementById("btn-eval-wayground");
+    if (evalWaygroundBtn) {
+      evalWaygroundBtn.addEventListener("click", () => {
+        const curIdx = S().examIndex || 0;
+        const it = S().items[curIdx];
+        if (!it) return;
+        if (!Quiz.isAnswered(it.q.id)) {
+           if (typeof toast === "function") toast("Debes elegir una respuesta para poder evaluar.");
+           return;
+        }
+        it.evaluatedWaygroundResult = window.Quiz.evaluateSingle(it.q.id);
+        renderQuiz();
       });
     }
 
@@ -3727,6 +3801,95 @@ Racha: ${conexStatsObj().streak || 0}`;
     }, 5000);
   }
 
+  function buildResultCardHTML(d, i) {
+    const stateOf = (s) => s === "correct" ? ["ok", "Correcta"] : s === "partial" ? ["par", "Parcial"] : ["no", "Incorrecta"];
+    const [cls, lbl] = stateOf(d.state);
+    const opts = d.q.type === "dropdown"
+      ? d.q.slots.map((txt, si) => {
+        const ch = d.slotChosen ? d.slotChosen[si] : null;
+        const isC = ch === d.q.correctSlot[si];
+        const oCls = isC ? "correct" : ch == null ? "missed" : "wrong";
+        const flag = isC ? "✓" : ch == null ? "sin responder" : "✗";
+        return `<div class="opt ${oCls}" style="cursor:default">
+          <span class="alpha">${si + 1}</span>
+          <span><b>${rich(txt)}</b><br>
+            <span class="muted small">Tu respuesta:</span> ${ch == null ? "—" : esc(d.q.dropdown[ch])}<br>
+            <span class="muted small">Correcta:</span> ${esc(d.q.dropdown[d.q.correctSlot[si]])}
+          </span>
+          <span class="opt-flag">${flag}</span>
+        </div>`;
+      }).join("")
+      : d.q.type === "fill"
+        ? (() => {
+          const has = !!d.fillAnswer;
+          const isC = d.state === "correct";
+          const oCls = isC ? "correct" : has ? "wrong" : "missed";
+          const flag = isC ? "✓" : has ? "✗" : "sin responder";
+          const overrideBtn = (!isC && has)
+            ? `<button class="btn sm fill-override-btn" data-qid="${d.q.id}" style="margin-top:6px; font-size:12px;" title="Marcar como correcta manualmente">
+                <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">check_circle</span>
+                Marcar como correcta
+              </button>`
+            : (d.manualOverride ? `<span class="chip" style="font-size:11px; margin-top:4px; display:inline-block;">✓ Marcada manualmente</span>` : "");
+          return `<div class="opt ${oCls}" style="cursor:default;" id="fill-opt-${d.q.id}">
+            <span class="alpha">1</span>
+            <span>
+              <b>Tu respuesta:</b> ${has ? esc(d.fillAnswer) : "—"}<br>
+              <span class="muted small">Correcta:</span> ${d.q.correct.map((c) => esc(c)).join(" / ")}
+              ${overrideBtn}
+            </span>
+            <span class="opt-flag" id="fill-flag-${d.q.id}">${flag}</span>
+          </div>`;
+        })()
+        : d.q.type === "order"
+          ? (() => {
+            const uOrder = d.userOrder || [];
+            const cOrder = d.q.correct || [];
+            return `<div class="order-result-grid">${cOrder.map((cIdx, pos) => {
+              const uIdx = uOrder[pos];
+              const isExact = uIdx === cIdx;
+              return `<div class="order-res-row ${isExact ? "correct" : "wrong"}">
+                <div class="order-res-num">${pos + 1}º</div>
+                <div class="order-res-body">
+                  <div class="order-res-val"><b>${rich(d.q.options[uIdx != null ? uIdx : cIdx])}</b></div>
+                  ${!isExact ? `<div class="order-res-correct"><span class="muted small">Orden correcto:</span> ${rich(d.q.options[cIdx])}</div>` : ""}
+                </div>
+                <span class="opt-flag">${isExact ? "✓" : "✗"}</span>
+              </div>`;
+            }).join("")}</div>`;
+          })()
+          : d.q.type === "image_puzzle"
+            ? (window.ImageQuiz ? window.ImageQuiz.renderResultHTML(d) : "")
+        : d.optOrder.map((orig, disp) => {
+        const isC = d.q.correct.indexOf(orig) >= 0;
+        const was = d.dispChecked.indexOf(disp) >= 0;
+        const oCls = isC && was ? "correct" : isC ? "missed" : was ? "wrong" : "";
+        const flag = isC && was ? "✓" : isC ? "correcta" : was ? "✗" : "";
+        return `<div class="opt ${oCls}" style="cursor:default">
+          <span class="alpha">${LETTERS[disp]}</span>
+          <span>${rich(d.q.options[orig])}</span>
+          <span class="opt-flag">${flag}</span>
+        </div>`;
+      }).join("");
+    const C = window.Cloud;
+    const isAdmin = C && C.isAdmin && C.isAdmin();
+    const editBtn = isAdmin ? `<button class="btn-icon" style="position:absolute; top:8px; right:8px; z-index:10;" onclick="window.openIAFixModal('${d.q.id}')" title="Corregir pregunta con IA"><span class="material-symbols-outlined" style="font-size:20px;">edit_note</span></button>` : '';
+
+    return `
+      <div class="qcard" style="position:relative;">
+        ${editBtn}
+        <div class="qhead" style="padding-right:40px;">
+          <span class="qnum">${i + 1}</span>
+          ${d.q.category ? `<span class="chip">${esc(d.q.category)}</span>` : ""}
+          <span class="badge ${cls}">${lbl}</span>
+          <span class="score-chip">${fmt(d.score)} p</span>
+        </div>
+        <div class="qtext">${rich(d.q.text)}</div>
+        <div class="opt-grid">${opts}</div>
+        ${d.q.explanation ? explainBlock(d.q.explanation) : ""}
+      </div>`;
+  }
+
   function renderResults(r) {
     const pct = r.max ? Math.round((r.total / r.max) * 100) : 0;
     showResultAnimation(pct >= 60);
@@ -3734,93 +3897,7 @@ Racha: ${conexStatsObj().streak || 0}`;
     const stateOf = (s) => s === "correct" ? ["ok", "Correcta"] : s === "partial" ? ["par", "Parcial"] : ["no", "Incorrecta"];
     const failedN = r.marked.failed.length + r.marked.partial.length;
 
-    const rows = r.detail.map((d, i) => {
-      const [cls, lbl] = stateOf(d.state);
-      const opts = d.q.type === "dropdown"
-        ? d.q.slots.map((txt, si) => {
-          const ch = d.slotChosen ? d.slotChosen[si] : null;
-          const isC = ch === d.q.correctSlot[si];
-          const oCls = isC ? "correct" : ch == null ? "missed" : "wrong";
-          const flag = isC ? "✓" : ch == null ? "sin responder" : "✗";
-          return `<div class="opt ${oCls}" style="cursor:default">
-            <span class="alpha">${si + 1}</span>
-            <span><b>${rich(txt)}</b><br>
-              <span class="muted small">Tu respuesta:</span> ${ch == null ? "—" : esc(d.q.dropdown[ch])}<br>
-              <span class="muted small">Correcta:</span> ${esc(d.q.dropdown[d.q.correctSlot[si]])}
-            </span>
-            <span class="opt-flag">${flag}</span>
-          </div>`;
-        }).join("")
-        : d.q.type === "fill"
-          ? (() => {
-            const has = !!d.fillAnswer;
-            const isC = d.state === "correct";
-            const oCls = isC ? "correct" : has ? "wrong" : "missed";
-            const flag = isC ? "✓" : has ? "✗" : "sin responder";
-            const overrideBtn = (!isC && has)
-              ? `<button class="btn sm fill-override-btn" data-qid="${d.q.id}" style="margin-top:6px; font-size:12px;" title="Marcar como correcta manualmente">
-                  <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">check_circle</span>
-                  Marcar como correcta
-                </button>`
-              : (d.manualOverride ? `<span class="chip" style="font-size:11px; margin-top:4px; display:inline-block;">✓ Marcada manualmente</span>` : "");
-            return `<div class="opt ${oCls}" style="cursor:default;" id="fill-opt-${d.q.id}">
-              <span class="alpha">1</span>
-              <span>
-                <b>Tu respuesta:</b> ${has ? esc(d.fillAnswer) : "—"}<br>
-                <span class="muted small">Correcta:</span> ${d.q.correct.map((c) => esc(c)).join(" / ")}
-                ${overrideBtn}
-              </span>
-              <span class="opt-flag" id="fill-flag-${d.q.id}">${flag}</span>
-            </div>`;
-          })()
-          : d.q.type === "order"
-            ? (() => {
-              const uOrder = d.userOrder || [];
-              const cOrder = d.q.correct || [];
-              return `<div class="order-result-grid">${cOrder.map((cIdx, pos) => {
-                const uIdx = uOrder[pos];
-                const isExact = uIdx === cIdx;
-                return `<div class="order-res-row ${isExact ? "correct" : "wrong"}">
-                  <div class="order-res-num">${pos + 1}º</div>
-                  <div class="order-res-body">
-                    <div class="order-res-val"><b>${rich(d.q.options[uIdx != null ? uIdx : cIdx])}</b></div>
-                    ${!isExact ? `<div class="order-res-correct"><span class="muted small">Orden correcto:</span> ${rich(d.q.options[cIdx])}</div>` : ""}
-                  </div>
-                  <span class="opt-flag">${isExact ? "✓" : "✗"}</span>
-                </div>`;
-              }).join("")}</div>`;
-            })()
-            : d.q.type === "image_puzzle"
-              ? (window.ImageQuiz ? window.ImageQuiz.renderResultHTML(d) : "")
-          : d.optOrder.map((orig, disp) => {
-          const isC = d.q.correct.indexOf(orig) >= 0;
-          const was = d.dispChecked.indexOf(disp) >= 0;
-          const oCls = isC && was ? "correct" : isC ? "missed" : was ? "wrong" : "";
-          const flag = isC && was ? "✓" : isC ? "correcta" : was ? "✗" : "";
-          return `<div class="opt ${oCls}" style="cursor:default">
-            <span class="alpha">${LETTERS[disp]}</span>
-            <span>${rich(d.q.options[orig])}</span>
-            <span class="opt-flag">${flag}</span>
-          </div>`;
-        }).join("");
-      const C = window.Cloud;
-      const isAdmin = C && C.isAdmin && C.isAdmin();
-      const editBtn = isAdmin ? `<button class="btn-icon" style="position:absolute; top:8px; right:8px; z-index:10;" onclick="window.openIAFixModal('${d.q.id}')" title="Corregir pregunta con IA"><span class="material-symbols-outlined" style="font-size:20px;">edit_note</span></button>` : '';
-
-      return `
-        <div class="qcard" style="position:relative;">
-          ${editBtn}
-          <div class="qhead" style="padding-right:40px;">
-            <span class="qnum">${i + 1}</span>
-            ${d.q.category ? `<span class="chip">${esc(d.q.category)}</span>` : ""}
-            <span class="badge ${cls}">${lbl}</span>
-            <span class="score-chip">${fmt(d.score)} p</span>
-          </div>
-          <div class="qtext">${rich(d.q.text)}</div>
-          <div class="opt-grid">${opts}</div>
-          ${d.q.explanation ? explainBlock(d.q.explanation) : ""}
-        </div>`;
-    }).join("");
+    const rows = r.detail.map((d, i) => buildResultCardHTML(d, i)).join("");
 
     view(`
       <div class="card result-hero" id="result-hero">

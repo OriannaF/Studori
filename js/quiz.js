@@ -475,6 +475,44 @@ const Quiz = (() => {
   };
   const answeredCount = () => S.items.filter((it) => isAnswered(it.q.id)).length;
 
+  function evaluateSingle(qid) {
+    const it = S.items.find((it) => it.q.id === qid);
+    if (!it) return null;
+    const q = it.q;
+    const pts = S.settings.points;
+    if (q.type === "dropdown") {
+      const chosen = S.answers[q.id] || {};
+      const score = scoreDropdown(q, chosen);
+      const full = score + 1e-9 >= pts;
+      return { q, optOrder: [], slotChosen: chosen, score, state: full ? "correct" : (score > 1e-9 ? "partial" : "failed") };
+    }
+    if (q.type === "fill") {
+      const answer = typeof S.answers[q.id] === "string" ? S.answers[q.id] : "";
+      const score = scoreFill(q, answer);
+      const full = score + 1e-9 >= pts;
+      return { q, optOrder: [], fillAnswer: answer, score, state: full ? "correct" : (score > 1e-9 ? "partial" : "failed") };
+    }
+    if (q.type === "order") {
+      const userOrder = (Array.isArray(S.answers[q.id]) && S.answers[q.id].length === q.correct.length)
+        ? S.answers[q.id]
+        : (it.initialOrder || q.options.map((_, i) => i));
+      const score = Math.round(scoreOrder(q, userOrder) * pts * 100000) / 100000;
+      const full = score + 1e-9 >= pts;
+      return { q, optOrder: [], userOrder, score, state: full ? "correct" : (score > 1e-9 ? "partial" : "failed") };
+    }
+    if (q.type === "image_puzzle") {
+      const placements = S.answers[q.id] || {};
+      const score = Math.round(scoreImagePuzzle(q, placements) * pts * 100000) / 100000;
+      const full = score + 1e-9 >= pts;
+      return { q, optOrder: [], placements, score, state: full ? "correct" : (score > 1e-9 ? "partial" : "failed"), pieces: it.puzzleShuffledPieces };
+    }
+    const dispChecked = (S.answers[q.id] || []).slice().sort((a, b) => a - b);
+    const origChecked = dispChecked.map((d) => it.optOrder[d]);
+    const score = scoreQuestion(q, origChecked);
+    const full = score + 1e-9 >= pts;
+    return { q, optOrder: it.optOrder, dispChecked, origChecked, score, state: full ? "correct" : (score > 1e-9 ? "partial" : "failed") };
+  }
+
   function submit() {
     const pts = S.settings.points;
     const marked = { correct: [], partial: [], failed: [] };
@@ -942,7 +980,7 @@ const Quiz = (() => {
 
   return {
     S, loadCsv, tryLoadSaved, newSession, repeatSession, failedSession, toggle, setSlot, setFill, setOrder, moveOrderItem,
-    isAnswered, answeredCount, submit, tryResume, resetProgress, reloadProgress,
+    isAnswered, answeredCount, evaluateSingle, submit, tryResume, resetProgress, reloadProgress,
     persistSettings, setSize, setTimedSize, setPoints, setMode, setCat, setTypeFilter, setTimedMinutes, setExamIndex, startCustomExam, setExamDate, setCatExamDate, quizDate, catDate,
     stats, failedCount, todayCount, newCount, scheduledByDay, questionsOnDay, scoreQuestion, scoreOrder, scoreImagePuzzle,
     setPuzzleSlot, loadCustoms, loadRepoImageQuestions, saveImageQuestion,
