@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=121`)
+      fetch(`${url}?v=122`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=121")
+      fetch("data/image_questions.json?v=122")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=121")
+      fetch("data/cuestionario Final ADS vO.csv?v=122")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -875,7 +875,35 @@
     loadSource().then((r) => {
       if (r.loaded) {
         warningsDismissed = false;
-        navigate("inicio");
+        
+        const params = new URLSearchParams(window.location.search);
+        const runHash = params.get("run");
+        const qzList = window.Quiz.S ? (window.Quiz.S.questionnaires || []) : [];
+        if (runHash && qzList.find(q => q.hash === runHash)) {
+          window.Quiz.selectQuestionnaire(runHash);
+          const m = params.get("m"); if (m) window.Quiz.setMode(m);
+          const c = params.get("c"); if (c) window.Quiz.setCat(c);
+          const y = params.get("y"); if (y) window.Quiz.setTypeFilter(y);
+          const t = params.get("t"); if (t) window.Quiz.setTimedMinutes(t);
+          const s = params.get("s");
+          if (s) {
+            if (m === "timed") window.Quiz.setTimedSize(s);
+            else window.Quiz.setSize(s);
+          }
+          window.Quiz.setExamIndex(0);
+          window.Quiz.newSession();
+          
+          if (window.Quiz.S.settings.mode === "timed") {
+             const minutes = window.Quiz.S.settings.timedMinutes || 40;
+             if (typeof startTimer === "function") startTimer(minutes * 60);
+          }
+          
+          returnView = "inicio";
+          navigate("quiz");
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+          navigate("inicio");
+        }
       } else if (r.errors) {
         renderLoadError(r.errors);
       } else {
@@ -2531,6 +2559,9 @@
         
       </div>
       <div class="modal-foot" style="justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px;">
+        <button class="btn ghost" id="btn-share-${hash}" type="button" style="display:inline-flex; align-items:center; gap:6px;" title="Copiar link con esta configuración">
+          <span class="material-symbols-outlined" style="font-size:20px;">share</span> Compartir
+        </button>
         <button class="btn ghost" id="btn-flash-${hash}" type="button" style="display:inline-flex; align-items:center; gap:6px;">
           <span class="material-symbols-outlined" style="font-size:20px;">style</span> Flashcards
         </button>
@@ -2566,10 +2597,36 @@
     }
 
     const startBtn = document.getElementById("btn-start-" + hash);
-    if (startBtn) startBtn.addEventListener("click", () => { ov.remove(); window.startQuiz(hash); });
+    if (startBtn) startBtn.addEventListener("click", () => { ov.remove(); startQuiz(hash); });
     
     const flashBtn = document.getElementById("btn-flash-" + hash);
-    if (flashBtn) flashBtn.addEventListener("click", () => { ov.remove(); window.startFlashcards(hash); });
+    if (flashBtn) flashBtn.addEventListener("click", () => { ov.remove(); startFlashcards(hash); });
+    
+    const shareBtn = document.getElementById("btn-share-" + hash);
+    if (shareBtn) {
+      shareBtn.addEventListener("click", () => {
+        const mode = modeSel ? modeSel.value : "";
+        const size = sizeSel ? sizeSel.value : "";
+        const time = (timeCont && timeCont.style.display !== "none" && document.getElementById("sel-time-" + hash)) ? document.getElementById("sel-time-" + hash).value : "";
+        const cat = (catCont && catCont.style.display !== "none" && document.getElementById("sel-cat-" + hash)) ? document.getElementById("sel-cat-" + hash).value : "";
+        const type = (typeCont && typeCont.style.display !== "none" && document.getElementById("sel-type-" + hash)) ? document.getElementById("sel-type-" + hash).value : "";
+        
+        const params = new URLSearchParams();
+        params.set("run", hash);
+        if (mode) params.set("m", mode);
+        if (size) params.set("s", size);
+        if (time) params.set("t", time);
+        if (cat) params.set("c", cat);
+        if (type) params.set("y", type);
+        
+        const url = window.location.origin + window.location.pathname + "?" + params.toString();
+        navigator.clipboard.writeText(url).then(() => {
+          if (typeof toast === "function") toast("¡Link de configuración copiado!");
+        }).catch(() => {
+          if (typeof toast === "function") toast("No se pudo copiar el link.");
+        });
+      });
+    }
   };
 
   function renderCursos() {
