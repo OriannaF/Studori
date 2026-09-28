@@ -2068,7 +2068,7 @@
     coursesPushTimer = setTimeout(() => {
       coursesPushTimer = null;
       C.publishCourses(window.QuizStore.loadCourses()).catch(() => {
-        toast("No se pudieron publicar las materias (revisá tu conexión).");
+        toast("No se pudieron publicar las materias: el cambio quedó solo en este dispositivo.");
       });
     }, 900);
   }
@@ -2078,6 +2078,11 @@
     if (!C || typeof C.fetchPublicCourses !== "function" || !C.isConfigured()) return;
     C.fetchPublicCourses().then((list) => {
       if (!Array.isArray(list)) return;
+      const local = window.QuizStore.loadCourses();
+      if (isOwner() && local.length && JSON.stringify(local) !== JSON.stringify(list)) {
+        schedulePublish();
+        return;
+      }
       try { localStorage.setItem("quiz.courses", JSON.stringify(list)); } catch (e) { return; }
       if (currentView === "cursos" || currentView === "inicio") refreshView();
       if (openCourseId) renderCourseModal();
@@ -2099,7 +2104,10 @@
     return loadCourses().find((c) => Array.isArray(c.quizzes) && c.quizzes.indexOf(hash) !== -1) || null;
   }
 
-  function isOwner() { return true; }
+  function isOwner() {
+    const C = window.Cloud;
+    return !!(C && typeof C.isAdmin === "function" && C.isAdmin());
+  }
 
   function getVisibleQuestionnaires() {
     const allQs = S().questionnaires || [];

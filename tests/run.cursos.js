@@ -160,6 +160,14 @@ const PROMPT = () => promptReply;
   await new Promise((r) => setTimeout(r, 200));
   const anonCard = wb.document.querySelector(".course-card h3");
   log("anon sees published materia", anonCard && anonCard.textContent.includes("Materia Publicada") ? "OK" : "FAIL");
+  log("anon has no rename pencil", !wb.document.querySelector(".course-card [data-rename-course]") ? "OK" : "FAIL");
+  const anonPencil = wb.document.querySelector('[data-rename-course="pub1"]');
+  if (anonPencil) {
+    anonPencil.click();
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  log("anon cannot rename materia", !wb.document.querySelector(".course-rename-input")
+    && wb.QuizStore.loadCourses()[0].name === "Materia Publicada" ? "OK" : "FAIL");
 
   const errsB = B.errors.filter(e => !/not implemented|Could not load|css/i.test(e));
   log("anon runtime errors", errsB.length ? "\n  " + errsB.join("\n  ") : "none");
