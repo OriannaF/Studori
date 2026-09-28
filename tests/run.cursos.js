@@ -118,12 +118,20 @@ const PROMPT = () => promptReply;
   log("play from modal starts quiz", inQuiz ? "OK" : "FAIL");
   if (inQuiz) { click($("#btn-exit")); await new Promise((r) => setTimeout(r, 50)); }
 
-  promptReply = "Sistemas II";
   const cardAfterQuiz = $(".course-card .mini-edit[data-rename-course]");
+  log("no progress bar in course card", !$(".course-card .progress") ? "OK" : "FAIL");
   click(cardAfterQuiz);
   await new Promise((r) => setTimeout(r, 50));
+  const inlineInput = $(".course-card .course-rename-input");
+  log("inline rename input in same card", inlineInput && $(".course-card .course-name").hidden ? "OK" : "FAIL");
+  if (inlineInput) {
+    inlineInput.value = "Sistemas II";
+    inlineInput.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 50));
+  }
   const renamed = w.QuizStore.loadCourses()[0].name === "Sistemas II";
   log("rename course", renamed && $(".course-card h3").textContent.includes("Sistemas II") ? "OK" : "FAIL");
+  log("input removed after save", !$(".course-rename-input") && !$(".course-name").hidden ? "OK" : "FAIL");
 
   click($('[data-open-course][data-tab="material"]'));
   await new Promise((r) => setTimeout(r, 50));

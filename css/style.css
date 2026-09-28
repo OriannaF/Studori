@@ -1513,6 +1513,25 @@ th {
 .mini-edit.play-mini { color: var(--accent-soft); flex: none; }
 .mini-edit.del:hover { color: var(--red); background: rgba(255, 82, 82, 0.1); }
 
+.course-rename-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 1px 3px;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  border-radius: 4px 4px 0 0;
+  cursor: text;
+  caret-color: var(--accent);
+}
+.course-rename-input:focus { outline: none; }
+.course-rename-input::selection { background: var(--accent); color: var(--bg); }
+
 /* ===== Materias: tarjetas estilo dashboard ===== */
 .mat-card {
   position: relative;
