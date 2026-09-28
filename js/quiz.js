@@ -29,6 +29,9 @@ const Quiz = (() => {
       const customs = JSON.parse(localStorage.getItem("custom_questionnaires") || "[]");
       if (customs.some(c => c.hash === window.Quiz.S.hash)) return false;
     } catch(e) {}
+    // Para planificacion no hay penalidad
+    const name = (window.Quiz.S.name || "").toLowerCase();
+    if (name.includes("planificaci")) return false;
     return true;
   }
 

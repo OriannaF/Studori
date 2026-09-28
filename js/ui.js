@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=118`)
+      fetch(`${url}?v=119`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=118")
+      fetch("data/image_questions.json?v=119")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=118")
+      fetch("data/cuestionario Final ADS vO.csv?v=119")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -2155,7 +2155,7 @@
         <div class="exam-card-body">
           <div class="course-top">
             <div class="mat-titling">
-              <h3>${esc(st.name)}</h3>
+              <h3 style="cursor:pointer; color:var(--primary); text-decoration:underline; text-decoration-color:var(--primary-light); text-underline-offset:3px;" onclick="window.openQuizConfigModal('${st.hash}')" title="Configurar y rendir">${esc(st.name)}</h3>
               <span class="eyebrow ${toneCls}">${mat ? esc(mat.name) : "Sin materia"}</span>
             </div>
           </div>
@@ -2166,29 +2166,6 @@
             <span><b>${st.total}</b> preguntas</span><span>·</span>
             <span><b>${st.today}</b> para hoy</span><span>·</span>
             <span><b>${st.mastered}</b> dominadas</span>
-          </div>
-          <div class="session-row">
-            <label class="field-label visually-hidden" for="sel-size-${st.hash}">Cantidad de preguntas</label>
-            <select class="input sm" id="sel-size-${st.hash}">${sizeOptions(st)}</select>
-            <label class="field-label visually-hidden" for="sel-mode-${st.hash}">Tipo de sesión</label>
-            <select class="input sm" id="sel-mode-${st.hash}">${modeOptions(st)}</select>
-            <label class="field-label visually-hidden" for="sel-time-${st.hash}">Tiempo de examen</label>
-            <select class="input sm time-sel" id="sel-time-${st.hash}" title="Tiempo límite del examen" ${S().settings.mode === "timed" ? "" : 'style="display:none;"'}>${timeOptions()}</select>
-            <button class="play-fab" id="btn-start-${st.hash}" title="Comenzar sesión">
-              <span class="material-symbols-outlined">play_arrow</span>
-            </button>
-            ${(() => {
-              const opts = catOptions(st.hash);
-              return opts ? `
-            <label class="field-label visually-hidden" for="sel-cat-${st.hash}">Categoría</label>
-            <select class="input sm cat-sel" id="sel-cat-${st.hash}" ${S().settings.mode === "timed" ? 'style="display:none;"' : ""}>${opts}</select>` : "";
-            })()}
-            ${(() => {
-              const topts = typeOptions(st.hash);
-              return topts ? `
-            <label class="field-label visually-hidden" for="sel-type-${st.hash}">Tipo de pregunta</label>
-            <select class="input sm type-sel" id="sel-type-${st.hash}" title="Filtrar por tipo de pregunta" ${S().settings.mode === "timed" ? 'style="display:none;"' : ""}>${topts}</select>` : "";
-            })()}
           </div>
           ${Quiz.draftOf(st.hash) ? `
           <button class="draft-chip" id="btn-resume-${st.hash}">
@@ -2520,6 +2497,106 @@
     }
   }
 
+
+  window.openQuizConfigModal = function(hash) {
+    const qzList = window.Quiz.S ? (window.Quiz.S.questionnaires || []) : (window.QuizStore.loadQuestionnaires ? window.QuizStore.loadQuestionnaires() : []);
+    const qq = qzList.find(q => q.hash === hash);
+    if (!qq) return;
+    const stats = window.Quiz.statsFor(hash);
+    
+    let ov = document.getElementById("quiz-config-overlay");
+    if (!ov) {
+      ov = document.createElement("div");
+      ov.id = "quiz-config-overlay";
+      ov.className = "modal-overlay";
+      ov.addEventListener("click", (e) => { if (e.target === ov) ov.remove(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.getElementById("quiz-config-overlay")) ov.remove(); });
+      document.body.appendChild(ov);
+    }
+    
+    const catOpts = catOptions(hash);
+    const typeOpts = typeOptions(hash);
+    const isTimed = window.Quiz.S && window.Quiz.S.settings && window.Quiz.S.settings.mode === "timed";
+    
+    ov.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" style="max-width: 400px; padding: 24px;">
+      <div class="modal-head" style="margin-bottom: 16px;">
+        <h3>Configurar sesión</h3>
+        <button class="mini-edit" id="qc-close" title="Cerrar"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+          <h4 style="margin:0 0 4px 0; color:var(--text); font-size:18px;">${esc(qq.name)}</h4>
+          <p class="muted small" style="margin:0;">${stats.total} preguntas disponibles</p>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label class="field-label" for="sel-mode-${hash}">Modo de Sesión</label>
+          <select class="input" id="sel-mode-${hash}">${modeOptions(stats)}</select>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label class="field-label" for="sel-size-${hash}">Cantidad de preguntas</label>
+          <select class="input" id="sel-size-${hash}">${sizeOptions(stats)}</select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;" id="time-container-${hash}">
+          <label class="field-label" for="sel-time-${hash}">Tiempo Límite</label>
+          <select class="input time-sel" id="sel-time-${hash}">${timeOptions()}</select>
+        </div>
+        
+        ${catOpts ? `<div style="display:flex; flex-direction:column; gap:6px;" id="cat-container-${hash}">
+          <label class="field-label" for="sel-cat-${hash}">Categoría</label>
+          <select class="input cat-sel" id="sel-cat-${hash}">${catOpts}</select>
+        </div>` : ""}
+        
+        ${typeOpts ? `<div style="display:flex; flex-direction:column; gap:6px;" id="type-container-${hash}">
+          <label class="field-label" for="sel-type-${hash}">Tipo de pregunta</label>
+          <select class="input type-sel" id="sel-type-${hash}">${typeOpts}</select>
+        </div>` : ""}
+        
+      </div>
+      <div class="modal-foot" style="justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px;">
+        <button class="btn ghost" id="btn-flash-${hash}" type="button" style="display:inline-flex; align-items:center; gap:6px;">
+          <span class="material-symbols-outlined" style="font-size:20px;">style</span> Flashcards
+        </button>
+        <button class="btn primary" id="btn-start-${hash}" style="display:inline-flex; align-items:center; gap:6px; padding: 10px 20px;">
+          <span class="material-symbols-outlined" style="font-size:20px;">play_arrow</span> Comenzar
+        </button>
+      </div>
+    </div>`;
+    
+    document.getElementById("qc-close").onclick = () => ov.remove();
+    
+    const modeSel = document.getElementById("sel-mode-" + hash);
+    const timeCont = document.getElementById("time-container-" + hash);
+    const catCont = document.getElementById("cat-container-" + hash);
+    const typeCont = document.getElementById("type-container-" + hash);
+    const sizeSel = document.getElementById("sel-size-" + hash);
+    
+    if (timeCont) timeCont.style.display = isTimed ? "flex" : "none";
+    if (catCont) catCont.style.display = isTimed ? "none" : "flex";
+    if (typeCont) typeCont.style.display = isTimed ? "none" : "flex";
+
+    if (modeSel) {
+      modeSel.addEventListener("change", (e) => {
+        const timed = e.target.value === "timed";
+        window.Quiz.setMode(e.target.value);
+        if (timeCont) timeCont.style.display = timed ? "flex" : "none";
+        if (catCont) catCont.style.display = timed ? "none" : "flex";
+        if (typeCont) typeCont.style.display = timed ? "none" : "flex";
+        if (sizeSel && window.Quiz.S && window.Quiz.S.settings) {
+          sizeSel.value = timed ? String(window.Quiz.S.settings.timedSize || 50) : String(window.Quiz.S.settings.size || 20);
+        }
+      });
+    }
+
+    const startBtn = document.getElementById("btn-start-" + hash);
+    if (startBtn) startBtn.addEventListener("click", () => { ov.remove(); window.startQuiz(hash); });
+    
+    const flashBtn = document.getElementById("btn-flash-" + hash);
+    if (flashBtn) flashBtn.addEventListener("click", () => { ov.remove(); window.startFlashcards(hash); });
+  };
 
   function renderCursos() {
     const qs = getVisibleQuestionnaires();
