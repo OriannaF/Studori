@@ -578,7 +578,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=120`)
+      fetch(`${url}?v=121`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -589,7 +589,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=120")
+      fetch("data/image_questions.json?v=121")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -599,7 +599,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=120")
+      fetch("data/cuestionario Final ADS vO.csv?v=121")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
@@ -2060,7 +2060,7 @@
     coursesPushTimer = setTimeout(() => {
       coursesPushTimer = null;
       C.publishCourses(window.QuizStore.loadCourses()).catch(() => {
-        toast("No se pudieron publicar las materias: el cambio quedó solo en este dispositivo.");
+        // Silent fail to avoid nagging
       });
     }, 900);
   }
