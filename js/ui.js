@@ -521,7 +521,9 @@
         const urls = [
           "data/cuestionario.csv?v=62",
           "data/cuestionario%20Burpleria.csv?v=62",
-          "data/cuestionario%20Primer%20Parcial%202026.csv?v=62"
+          "data/cuestionario%20Primer%20Parcial%202026.csv?v=62",
+          "data/cuestionario%20Planificacion.csv?v=62",
+          "data/cuestionario%20Diseño.csv?v=62"
         ];
         Promise.all(
           urls.map((u) => fetch(u).catch(() => null))
@@ -653,6 +655,7 @@
       loadOne("data/cuestionario Primer Parcial 2026.csv", "Primer Parcial 2026"),
       loadOne("data/Notebook.csv", "Notebook"),
       loadOne("data/cuestionario Planificacion.csv", "Planificación"),
+      loadOne("data/cuestionario Diseño.csv", "Diseño"),
       loadImageQuestions(),
       syncBurpleria()
     ]).then(([r1, r2, r3]) => {
@@ -660,20 +663,40 @@
       
       const qzList = S().questionnaires;
       const planQ = qzList.find(q => q.name === "Planificación");
+      const disQ = qzList.find(q => q.name === "Diseño");
+      let courses = window.QuizStore.loadCourses();
+      if (!Array.isArray(courses)) courses = [];
+      let coursesChanged = false;
+
       if (planQ) {
-        let courses = window.QuizStore.loadCourses();
-        if (!Array.isArray(courses)) courses = [];
         let planCourse = courses.find(c => c.name.toLowerCase().includes("planificaci"));
         if (!planCourse) {
-          planCourse = { id: Date.now().toString(36), name: "Planificación", quizzes: [], material: [], links: [] };
+          planCourse = { id: Date.now().toString(36) + "p", name: "Planificación", quizzes: [], material: [], links: [] };
           courses.push(planCourse);
         }
         if (!planCourse.quizzes) planCourse.quizzes = [];
         if (!planCourse.quizzes.includes(planQ.hash)) {
           planCourse.quizzes.push(planQ.hash);
-          if (typeof updateCourses === "function") updateCourses(courses);
-          else window.QuizStore.saveCourses(courses);
+          coursesChanged = true;
         }
+      }
+
+      if (disQ) {
+        let disCourse = courses.find(c => c.name.toLowerCase().includes("diseño"));
+        if (!disCourse) {
+          disCourse = { id: Date.now().toString(36) + "d", name: "Diseño de Sistemas", quizzes: [], material: [], links: [] };
+          courses.push(disCourse);
+        }
+        if (!disCourse.quizzes) disCourse.quizzes = [];
+        if (!disCourse.quizzes.includes(disQ.hash)) {
+          disCourse.quizzes.push(disQ.hash);
+          coursesChanged = true;
+        }
+      }
+
+      if (coursesChanged) {
+        if (typeof updateCourses === "function") updateCourses(courses);
+        else window.QuizStore.saveCourses(courses);
       }
       
       // Combinación dinámica de los 3 cuestionarios solicitados
