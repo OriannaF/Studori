@@ -519,11 +519,11 @@
         btnForce.disabled = true;
         btnForce.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px; animation:spin 1s linear infinite;">sync</span> Guardando cuestionarios…`;
         const urls = [
-          "data/cuestionario.csv?v=62",
-          "data/cuestionario%20Burpleria.csv?v=62",
-          "data/cuestionario%20Primer%20Parcial%202026.csv?v=62",
-          "data/cuestionario%20Planificacion.csv?v=62",
-          "data/cuestionario%20Diseño.csv?v=62"
+          "data/cuestionario.csv?v=124",
+          "data/cuestionario%20Burpleria.csv?v=124",
+          "data/cuestionario%20Primer%20Parcial%202026.csv?v=124",
+          "data/cuestionario%20Planificacion.csv?v=124",
+          "data/cuestionario%20Diseño.csv?v=124"
         ];
         Promise.all(
           urls.map((u) => fetch(u).catch(() => null))
@@ -594,7 +594,7 @@
 
   function loadSource() {
     const loadOne = (url, name) =>
-      fetch(`${url}?v=122`)
+      fetch(`${url}?v=123`)
         .then((r) => (r.ok ? r.text() : Promise.reject(new Error("no file"))))
         .then((txt) => {
           if (!txt.trim()) return { ok: false, skipped: true };
@@ -605,7 +605,7 @@
         .catch(() => ({ ok: false, skipped: true }));
 
     const loadImageQuestions = () =>
-      fetch("data/image_questions.json?v=122")
+      fetch("data/image_questions.json?v=123")
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (Array.isArray(list) && list.length && typeof Quiz.loadRepoImageQuestions === "function") {
@@ -615,7 +615,7 @@
         .catch(() => {});
 
     const syncBurpleria = () =>
-      fetch("data/cuestionario Final ADS vO.csv?v=122")
+      fetch("data/cuestionario Final ADS vO.csv?v=123")
         .then((r) => (r.ok ? r.text() : ""))
         .then((txt) => {
           if (!txt) return;
